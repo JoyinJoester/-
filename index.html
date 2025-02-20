@@ -3,350 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>极简搜索</title>
+    <title>链接净化工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
-            --primary-color: rgba(255, 255, 255, 0.9);
-            --secondary-color: #f0f0f0;
-            --text-color: #333;
-            --accent-color: #6bb9f0;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --dark-primary: rgba(40, 40, 40, 0.9);
-            --dark-secondary: #2d2d2d;
-            --dark-text: #f0f0f0;
+            --primary-color: #42a5f5;
+            --background-color: #f8f9fa;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #2d3436;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        body, html {
+        body.dark-mode {
+            --primary-color: #81d4fa;
+            --background-color: #263238;
+            --card-bg: rgba(38, 50, 56, 0.9);
+            --text-color: #eceff1;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: url('https://source.unsplash.com/random/1920x1080') no-repeat center center fixed;
-            background-size: cover;
+            background-color: var(--background-color);
             color: var(--text-color);
-            transition: background-color 0.3s;
-        }
-
-        .blur-layer {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            backdrop-filter: blur(12px);
-            z-index: -1;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            transition: all 0.3s ease;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 800px;
+            width: 90%;
             padding: 20px;
         }
 
-        .title {
-            color: var(--text-color);
-            text-shadow: var(--shadow);
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            user-select: none;
-            transition: color 0.3s;
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow);
         }
 
-        .search-box {
-            background: var(--primary-color);
-            padding: 15px 25px;
-            border-radius: 50px;
-            box-shadow: var(--shadow);
-            width: 90%;
-            max-width: 700px;
-            margin-bottom: 40px;
+        /* 输入区域 */
+        .input-group {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        #inputLink {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #inputLink:focus {
+            outline: none;
+            box-shadow: 0 0 8px var(--primary-color);
+        }
+
+        /* 按钮样式 */
+        .button-group {
             display: flex;
             gap: 10px;
-            position: relative;
+            margin-top: 20px;
         }
 
-        #search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            padding: 10px;
-            outline: none;
-        }
-
-        #search-button {
-            background: var(--accent-color);
-            border: none;
-            border-radius: 20px;
-            padding: 8px 20px;
-            color: white;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        #search-button:hover {
-            opacity: 0.9;
-        }
-
-        .quick-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 20px;
-            width: 90%;
-            max-width: 1000px;
-            justify-content: center;
-        }
-
-        .link-card {
-            background: var(--primary-color);
-            padding: 15px 25px;
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 120px;
-            text-align: center;
-            position: relative;
-        }
-
-        .link-card:hover {
-            transform: translateY(-3px);
-            background: var(--secondary-color);
-        }
-
-        .control-buttons {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .control-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            box-shadow: var(--shadow);
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .control-btn:hover {
-            transform: scale(1.1);
-        }
-
-        /* 弹出卡片样式 */
-        .popup-card {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--primary-color);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            width: 300px;
-        }
-
-        .popup-card button {
-            padding: 10px;
+        .btn {
+            padding: 12px 24px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .popup-card button.confirm {
-            background: var(--accent-color);
+        .btn-primary {
+            background: var(--primary-color);
             color: white;
         }
 
-        .popup-card button.cancel {
-            background: var(--secondary-color);
+        .btn-secondary {
+            background: rgba(66, 165, 245, 0.1);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
         }
 
-        .overlay {
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* 控制按钮 */
+        .control-buttons {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            z-index: 99;
-            display: none;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
         }
 
-        /* 夜间模式样式 */
-        .dark-mode {
-            --primary-color: var(--dark-primary);
-            --secondary-color: var(--dark-secondary);
-            --text-color: var(--dark-text);
-            background-color: #1a1a1a;
+        .icon-btn {
+            padding: 10px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
 <body>
-    <div class="blur-layer"></div>
+    <!-- 主内容 -->
     <div class="container">
-        <h1 class="title" id="mainTitle">简单搜索</h1>
-        
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="输入搜索内容...">
-            <button id="search-button">搜索</button>
+        <div class="card">
+            <h2 style="color: var(--primary-color); text-align: center;">链接净化工具</h2>
+            <div class="input-group">
+                <input type="text" id="inputLink" 
+                       placeholder="输入需要处理的链接...">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="openLinkBtn">
+                    <span class="material-icons">open_in_new</span>
+                    打开链接
+                </button>
+                <button class="btn btn-secondary" id="copyBtn">
+                    <span class="material-icons">content_copy</span>
+                    复制结果
+                </button>
+            </div>
         </div>
-
-        <div class="quick-links" id="quickLinks">
-            <div class="link-card" data-url="https://gmail.com">Gmail</div>
-            <div class="link-card" data-url="https://github.com">GitHub</div>
-            <div class="link-card" data-url="https://youtube.com">YouTube</div>
-        </div>
     </div>
 
-    <!-- 删除确认卡片 -->
-    <div class="overlay" id="overlay"></div>
-    <div class="popup-card" id="deleteConfirmCard">
-        <p>确定要删除这个快捷方式吗？</p>
-        <button class="confirm" id="confirmDelete">删除</button>
-        <button class="cancel" id="cancelDelete">取消</button>
-    </div>
-
-    <!-- 搜索引擎选择卡片 -->
-    <div class="popup-card" id="engineSelectCard">
-        <p>选择搜索引擎：</p>
-        <button data-engine="https://www.google.com/search?q=">Google</button>
-        <button data-engine="https://www.bing.com/search?q=">Bing</button>
-        <button data-engine="https://www.baidu.com/s?wd=">百度</button>
-        <button class="cancel" id="cancelEngineSelect">取消</button>
-    </div>
-
-    <!-- 控制按钮 -->
+    <!-- 右下角控制按钮 -->
     <div class="control-buttons">
-        <div class="control-btn" id="editBtn">✎</div>
-        <div class="control-btn" id="nightModeBtn">🌙</div>
+        <button class="icon-btn" id="homeButton">
+            <span class="material-icons">home</span>
+        </button>
+        <button class="icon-btn" id="darkModeBtn">
+            <span class="material-icons">dark_mode</span>
+        </button>
     </div>
 
     <script>
-        // 搜索功能
-        document.getElementById('search-button').addEventListener('click', performSearch);
-        document.getElementById('search-input').addEventListener('keypress', e => {
-            if (e.key === 'Enter') performSearch();
+        // 元素获取
+        const openLinkBtn = document.getElementById('openLinkBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const inputLink = document.getElementById('inputLink');
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        const homeButton = document.getElementById('homeButton');
+
+        // 白名单模式正则表达式
+        const whitelist = /[a-zA-Z0-9\-._~:\/?#[\]@!$&'()*+,;=%]/g;
+
+        // 处理函数
+        function processLink() {
+            const original = inputLink.value;
+            // 白名单模式：仅保留指定字符
+            const result = (original.match(whitelist) || []).join('');
+            inputLink.value = result;
+            return result;
+        }
+
+        // 打开链接
+        openLinkBtn.addEventListener('click', () => {
+            const processedLink = processLink();
+            if (processedLink) {
+                window.open(processedLink, '_blank');
+            } else {
+                alert('请输入有效的链接！');
+            }
         });
 
-        function performSearch() {
-            const query = document.getElementById('search-input').value;
-            const engine = localStorage.getItem('searchEngine') || 'https://www.google.com/search?q=';
-            window.open(engine + encodeURIComponent(query), '_blank');
-        }
-
-        // 链接点击处理
-        document.querySelectorAll('.link-card').forEach(card => {
-            card.addEventListener('click', () => window.open(card.dataset.url));
+        // 复制结果
+        copyBtn.addEventListener('click', () => {
+            const processedLink = processLink();
+            if (processedLink) {
+                navigator.clipboard.writeText(processedLink);
+                alert('链接已复制到剪贴板！');
+            } else {
+                alert('请输入有效的链接！');
+            }
         });
 
-        // 长按删除功能
-        let deleteTimer;
-        let cardToDelete;
-
-        document.querySelectorAll('.link-card').forEach(card => {
-            card.addEventListener('mousedown', startDeleteTimer);
-            card.addEventListener('touchstart', startDeleteTimer);
-            card.addEventListener('mouseup', cancelDelete);
-            card.addEventListener('touchend', cancelDelete);
-            card.addEventListener('mouseleave', cancelDelete);
-        });
-
-        function startDeleteTimer(e) {
-            cardToDelete = e.currentTarget;
-            deleteTimer = setTimeout(() => {
-                showDeleteConfirm();
-            }, 1000);
-            e.preventDefault();
-        }
-
-        function cancelDelete() {
-            clearTimeout(deleteTimer);
-        }
-
-        function showDeleteConfirm() {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('deleteConfirmCard').style.display = 'flex';
-        }
-
-        function hideDeleteConfirm() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('deleteConfirmCard').style.display = 'none';
-        }
-
-        document.getElementById('confirmDelete').addEventListener('click', () => {
-            cardToDelete.remove();
-            saveLinks();
-            hideDeleteConfirm();
-        });
-
-        document.getElementById('cancelDelete').addEventListener('click', hideDeleteConfirm);
-
-        // 搜索引擎选择功能
-        document.getElementById('mainTitle').addEventListener('click', () => {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('engineSelectCard').style.display = 'flex';
-        });
-
-        document.querySelectorAll('#engineSelectCard button:not(.cancel)').forEach(btn => {
-            btn.addEventListener('click', () => {
-                localStorage.setItem('searchEngine', btn.dataset.engine);
-                hideEngineSelect();
-            });
-        });
-
-        document.getElementById('cancelEngineSelect').addEventListener('click', hideEngineSelect);
-
-        function hideEngineSelect() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('engineSelectCard').style.display = 'none';
-        }
-
-        // 保存链接
-        function saveLinks() {
-            const links = Array.from(document.querySelectorAll('.link-card')).map(card => ({
-                name: card.textContent,
-                url: card.dataset.url
-            }));
-            localStorage.setItem('quickLinks', JSON.stringify(links));
-        }
-
-        // 加载保存的链接
-        const savedLinks = localStorage.getItem('quickLinks');
-        if (savedLinks) {
-            JSON.parse(savedLinks).forEach(link => {
-                const card = document.createElement('div');
-                card.className = 'link-card';
-                card.textContent = link.name;
-                card.dataset.url = link.url;
-                card.addEventListener('click', () => window.open(link.url));
-                quickLinks.appendChild(card);
-            });
-        }
-
-        // 夜间模式切换
-        document.getElementById('nightModeBtn').addEventListener('click', () => {
+        // 夜间模式
+        darkModeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
-            localStorage.setItem('nightMode', document.body.classList.contains('dark-mode'));
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            darkModeBtn.innerHTML = document.body.classList.contains('dark-mode') 
+                ? '<span class="material-icons">light_mode</span>'
+                : '<span class="material-icons">dark_mode</span>';
+        });
+
+        // 跳转到主页
+        homeButton.addEventListener('click', () => {
+            window.location.href = 'index.html';
         });
 
         // 初始化夜间模式
-        if (localStorage.getItem('nightMode') === 'true') {
+        if(localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
+            darkModeBtn.innerHTML = '<span class="material-icons">light_mode</span>';
         }
+
+        // 自动处理输入
+        inputLink.addEventListener('input', processLink);
     </script>
 </body>
 </html>
