@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简搜索</title>
+    <style>
+        :root {
+            --primary-color: rgba(255, 255, 255, 0.9);
+            --secondary-color: #f0f0f0;
+            --text-color: #333;
+            --accent-color: #6bb9f0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --dark-primary: rgba(40, 40, 40, 0.9);
+            --dark-secondary: #2d2d2d;
+            --dark-text: #f0f0f0;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: url('https://source.unsplash.com/random/1920x1080') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+
+        .blur-layer {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(12px);
+            z-index: -1;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .title {
+            color: var(--text-color);
+            text-shadow: var(--shadow);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            user-select: none;
+            transition: color 0.3s;
+        }
+
+        .search-box {
+            background: var(--primary-color);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 700px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        #search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            padding: 10px;
+            outline: none;
+        }
+
+        #search-button {
+            background: var(--accent-color);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        #search-button:hover {
+            opacity: 0.9;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 1000px;
+            justify-content: center;
+        }
+
+        .link-card {
+            background: var(--primary-color);
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 120px;
+            text-align: center;
+            position: relative;
+        }
+
+        .link-card:hover {
+            transform: translateY(-3px);
+            background: var(--secondary-color);
+        }
+
+        .control-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            box-shadow: var(--shadow);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 弹出卡片样式 */
+        .popup-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary-color);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+        }
+
+        .popup-card button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .popup-card button.confirm {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .popup-card button.cancel {
+            background: var(--secondary-color);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 99;
+            display: none;
+        }
+
+        /* 夜间模式样式 */
+        .dark-mode {
+            --primary-color: var(--dark-primary);
+            --secondary-color: var(--dark-secondary);
+            --text-color: var(--dark-text);
+            background-color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="blur-layer"></div>
+    <div class="container">
+        <h1 class="title" id="mainTitle">简单搜索</h1>
+        
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="输入搜索内容...">
+            <button id="search-button">搜索</button>
+        </div>
+
+        <div class="quick-links" id="quickLinks">
+            <div class="link-card" data-url="https://gmail.com">Gmail</div>
+            <div class="link-card" data-url="https://github.com">GitHub</div>
+            <div class="link-card" data-url="https://youtube.com">YouTube</div>
+        </div>
+    </div>
+
+    <!-- 删除确认卡片 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup-card" id="deleteConfirmCard">
+        <p>确定要删除这个快捷方式吗？</p>
+        <button class="confirm" id="confirmDelete">删除</button>
+        <button class="cancel" id="cancelDelete">取消</button>
+    </div>
+
+    <!-- 搜索引擎选择卡片 -->
+    <div class="popup-card" id="engineSelectCard">
+        <p>选择搜索引擎：</p>
+        <button data-engine="https://www.google.com/search?q=">Google</button>
+        <button data-engine="https://www.bing.com/search?q=">Bing</button>
+        <button data-engine="https://www.baidu.com/s?wd=">百度</button>
+        <button class="cancel" id="cancelEngineSelect">取消</button>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="control-buttons">
+        <div class="control-btn" id="editBtn">✎</div>
+        <div class="control-btn" id="nightModeBtn">🌙</div>
+    </div>
+
+    <script>
+        // 搜索功能
+        document.getElementById('search-button').addEventListener('click', performSearch);
+        document.getElementById('search-input').addEventListener('keypress', e => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        function performSearch() {
+            const query = document.getElementById('search-input').value;
+            const engine = localStorage.getItem('searchEngine') || 'https://www.google.com/search?q=';
+            window.open(engine + encodeURIComponent(query), '_blank');
+        }
+
+        // 链接点击处理
+        document.querySelectorAll('.link-card').forEach(card => {
+            card.addEventListener('click', () => window.open(card.dataset.url));
+        });
+
+        // 长按删除功能
+        let deleteTimer;
+        let cardToDelete;
+
+        document.querySelectorAll('.link-card').forEach(card => {
+            card.addEventListener('mousedown', startDeleteTimer);
+            card.addEventListener('touchstart', startDeleteTimer);
+            card.addEventListener('mouseup', cancelDelete);
+            card.addEventListener('touchend', cancelDelete);
+            card.addEventListener('mouseleave', cancelDelete);
+        });
+
+        function startDeleteTimer(e) {
+            cardToDelete = e.currentTarget;
+            deleteTimer = setTimeout(() => {
+                showDeleteConfirm();
+            }, 1000);
+            e.preventDefault();
+        }
+
+        function cancelDelete() {
+            clearTimeout(deleteTimer);
+        }
+
+        function showDeleteConfirm() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('deleteConfirmCard').style.display = 'flex';
+        }
+
+        function hideDeleteConfirm() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('deleteConfirmCard').style.display = 'none';
+        }
+
+        document.getElementById('confirmDelete').addEventListener('click', () => {
+            cardToDelete.remove();
+            saveLinks();
+            hideDeleteConfirm();
+        });
+
+        document.getElementById('cancelDelete').addEventListener('click', hideDeleteConfirm);
+
+        // 搜索引擎选择功能
+        document.getElementById('mainTitle').addEventListener('click', () => {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('engineSelectCard').style.display = 'flex';
+        });
+
+        document.querySelectorAll('#engineSelectCard button:not(.cancel)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                localStorage.setItem('searchEngine', btn.dataset.engine);
+                hideEngineSelect();
+            });
+        });
+
+        document.getElementById('cancelEngineSelect').addEventListener('click', hideEngineSelect);
+
+        function hideEngineSelect() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('engineSelectCard').style.display = 'none';
+        }
+
+        // 保存链接
+        function saveLinks() {
+            const links = Array.from(document.querySelectorAll('.link-card')).map(card => ({
+                name: card.textContent,
+                url: card.dataset.url
+            }));
+            localStorage.setItem('quickLinks', JSON.stringify(links));
+        }
+
+        // 加载保存的链接
+        const savedLinks = localStorage.getItem('quickLinks');
+        if (savedLinks) {
+            JSON.parse(savedLinks).forEach(link => {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+                card.textContent = link.name;
+                card.dataset.url = link.url;
+                card.addEventListener('click', () => window.open(link.url));
+                quickLinks.appendChild(card);
+            });
+        }
+
+        // 夜间模式切换
+        document.getElementById('nightModeBtn').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('nightMode', document.body.classList.contains('dark-mode'));
+        });
+
+        // 初始化夜间模式
+        if (localStorage.getItem('nightMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>
