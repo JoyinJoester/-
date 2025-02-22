@@ -3,230 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>链接净化工具</title>
+    <title>氢搜</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root {
+         /* 全局样式 */
+         :root {
             --primary-color: #42a5f5;
-            --background-color: #f8f9fa;
-            --card-bg: rgba(255, 255, 255, 0.9);
+            --background-color: #f0f2f5;
             --text-color: #2d3436;
+			--text1-color: #ffffff;
+            --card-background: rgba(255, 255, 255, 0.9);
+            --footer-background: rgba(255, 255, 255, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
         body.dark-mode {
-            --primary-color: #81d4fa;
-            --background-color: #263238;
-            --card-bg: rgba(38, 50, 56, 0.9);
-            --text-color: #eceff1;
+            --primary-color: #bb86fc;
+            --background-color: #1c1c1c;
+            --text-color: #ffffff;
+			--text1-color: #2d3436;
+            --card-background: rgba(40, 40, 40, 0.9);
+            --footer-background: rgba(40, 40, 40, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+			 /*font-family: '方正筑紫A圆体R', 方正筑紫A圆体R;*/
+           font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
-            transition: all 0.3s ease;
-            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+            ;
+        }
+         /* 夜间模式切换容器 */
+         .mode-container {
+            position: fixed;
+            bottom: 70px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        /* 夜间模式切换按钮 */
+        .mode-toggle {
+            background-color: var(--card-background);
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1rem;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
-        /* 主容器 */
-        .container {
-            max-width: 800px;
-            width: 90%;
-            padding: 20px;
+        .mode-toggle:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+            transform: translateY(-2px);
         }
+            /* 移动端适配 */
+        @media (max-width: 768px) {
+            .player-content {
+                grid-template-columns: 1fr;
+            }
 
-        /* 卡片样式 */
-        .card {
-            background: var(--card-bg);
+            .playlist-section {
+                max-height: 200px;
+            }
+
+            .album-art {
+                width: 150px;
+                height: 150px;
+            }
+
+            .control-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .volume-control {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            #volumeSlider {
+                width: 80px;
+            }
+
+            .controls {
+                padding-bottom: 60px;
+            }
+        }
+		
+		
+		
+		 h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1c1c1c;
+            margin-bottom: 20px;
+        }
+        /* 搜索 */
+        .search-container {
+            top: 50px;
+            position: relative;
+			margin: auto;
+            background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 30px;
-            box-shadow: var(--shadow);
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
         }
 
-        /* 输入区域 */
-        .input-group {
-            position: relative;
-            margin: 20px 0;
-        }
-
-        #inputLink {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--text-color);
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        #inputLink:focus {
-            outline: none;
-            box-shadow: 0 0 8px var(--primary-color);
-        }
-
-        /* 按钮样式 */
-        .button-group {
+         /* 搜索框容器 */
+         .search-box {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            align-items: center;
+            gap: 8px; /* 缩小间距 */
+            position: relative;
         }
 
-        .btn {
-            padding: 12px 24px;
+        /* 搜索引擎选择按钮 */
+        #engineButton {
+            padding: 10px 12px; /* 缩小内边距 */
+            background: var(--primary-color);
+            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 500;
+            font-size: 14px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            white-space: nowrap; /* 防止文字换行 */
         }
 
-        .btn-primary {
+        #engineButton:hover {
+            background: #F5BEFF;
+        }
+
+        /* 搜索输入框 */
+        #searchInput {
+            flex: 1;
+            padding: 10px 12px; /* 缩小内边距 */
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 14px; /* 缩小字体 */
+            outline: none;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            min-width: 0; /* 防止溢出 */
+        }
+
+        #searchInput:focus {
+            border-color: var(--hover-color);
+            box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
+        }
+
+        /* 搜索按钮 */
+        #searchButton {
+            padding: 10px 16px; /* 缩小内边距 */
             background: var(--primary-color);
             color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px; /* 缩小字体 */
+            transition: all 0.3s ease;
+            white-space: nowrap; /* 防止文字换行 */
         }
 
-        .btn-secondary {
-            background: rgba(66, 165, 245, 0.1);
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-        }
-
-        .btn:hover {
-            opacity: 0.9;
+        #searchButton:hover {
+            background: #F5BEFF;
             transform: translateY(-1px);
         }
 
-        /* 控制按钮 */
-        .control-buttons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        /* 引擎选择下拉菜单 */
+        .engine-dropdown {
+            position: absolute;
+            left: 0;
+			color: black;
+            top: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            z-index: 100;
+            display: none;
+            width: 160px;
+        }
+
+        .engine-dropdown.show {
+            display: block;
+        }
+
+        .engine-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .icon-btn {
-            padding: 10px;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .engine-item:hover {
+            background: rgba(66, 165, 245, 0.1);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .search-container {
+                padding: 20px;
+            }
+
+            .search-box {
+                gap: 6px; /* 进一步缩小间距 */
+            }
+
+            #engineButton {
+                padding: 8px 10px; /* 进一步缩小内边距 */
+                font-size: 12px; /* 缩小字体 */
+            }
+
+            #searchInput {
+                padding: 8px 10px; /* 进一步缩小内边距 */
+                font-size: 12px; /* 缩小字体 */
+            }
+
+            #searchButton {
+                padding: 8px 12px; /* 进一步缩小内边距 */
+                font-size: 12px; /* 缩小字体 */
+            }
+
+            .engine-dropdown {
+                width: 120px; /* 缩小下拉菜单宽度 */
+                font-size: 12px; /* 缩小字体 */
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 主内容 -->
-    <div class="container">
-        <div class="card">
-            <h2 style="color: var(--primary-color); text-align: center;">链接净化工具</h2>
-            <div class="input-group">
-                <input type="text" id="inputLink" 
-                       placeholder="输入需要处理的链接...">
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" id="openLinkBtn">
-                    <span class="material-icons">open_in_new</span>
-                    打开链接
-                </button>
-                <button class="btn btn-secondary" id="copyBtn">
-                    <span class="material-icons">content_copy</span>
-                    复制结果
-                </button>
+    <div id="so" class="page">
+		<div class="search-container">
+        <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
+        <div class="search-box">
+            <button id="engineButton">
+                
+                百度 ▼
+            </button>
+            <input type="text" id="searchInput" placeholder="输入关键词...">
+            <button id="searchButton">搜索</button>
+            <div class="engine-dropdown" id="engineDropdown">
+                <div class="engine-item" data-engine="baidu">
+                    
+                    百度
+                </div>
+                <div class="engine-item" data-engine="google">
+                    
+                    Google
+                </div>
+                <div class="engine-item" data-engine="bing">
+                    
+                    Bing
+                </div>
+                <div class="engine-item" data-engine="duckduckgo">
+                    DuckDuckGo
+                </div>
+                
+                <div class="engine-item" data-engine="CSDN">
+                    CSDN
+                </div>
+                <div class="engine-item" data-engine="GitHub">
+                    GitHub
+                </div>
+                <div class="engine-item" data-engine="bokeyuan">
+                    博客园
+                </div>
+                <div class="engine-item" data-engine="yinghua">
+                    樱花动漫
+                </div>
+                <div class="engine-item" data-engine="yandex">
+                    yandex
+                </div>
+                <div class="engine-item" data-engine="mengniang">
+                    萌娘百科
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 右下角控制按钮 -->
-    <div class="control-buttons">
-        <button class="icon-btn" id="homeButton">
-            <span class="material-icons">home</span>
-        </button>
-        <button class="icon-btn" id="darkModeBtn">
-            <span class="material-icons">dark_mode</span>
-        </button>
-    </div>
-
+	</div>
     <script>
-        // 元素获取
-        const openLinkBtn = document.getElementById('openLinkBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const inputLink = document.getElementById('inputLink');
-        const darkModeBtn = document.getElementById('darkModeBtn');
-        const homeButton = document.getElementById('homeButton');
+        // 搜索引擎配置
+        const engines = {
+            baidu: "https://www.baidu.com/s?wd=",
+            google: "https://www.google.com/search?q=",
+            bing: "https://www.bing.com/search?q=",
+            duckduckgo: "https://duckduckgo.com/?q=",
+            CSDN: "https://so.csdn.net/so/search?q=",
+            github: "https://github.com/search?q=",
+            bokeyuan: "https://zzk.cnblogs.com/s?w=",
+            yinghua: "https://www.yinghua8.net/lookfor.html?wd=",
+            yandex: "https://yandex.com/search/?text=",
+            mengniang: "https://zh.moegirl.org.cn/index.php?search="
+        };
 
-        // 白名单模式正则表达式
-        const whitelist = /[a-zA-Z0-9\-._~:\/?#[\]@!$&'()*+,;=%]/g;
+        let currentEngine = "baidu";
 
-        // 处理函数
-        function processLink() {
-            const original = inputLink.value;
-            // 白名单模式：仅保留指定字符
-            const result = (original.match(whitelist) || []).join('');
-            inputLink.value = result;
-            return result;
-        }
+        // 切换搜索引擎
+        document.querySelectorAll('.engine-item').forEach(item => {
+            item.addEventListener('click', () => {
+                currentEngine = item.dataset.engine;
+                document.getElementById('engineButton').innerHTML = `
+                    
+                    ${item.textContent.trim()} ▼
+                `;
+                document.getElementById('engineDropdown').classList.remove('show');
+            });
+        });
 
-        // 打开链接
-        openLinkBtn.addEventListener('click', () => {
-            const processedLink = processLink();
-            if (processedLink) {
-                window.open(processedLink, '_blank');
-            } else {
-                alert('请输入有效的链接！');
+        // 显示/隐藏引擎选择菜单
+        document.getElementById('engineButton').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('engineDropdown').classList.toggle('show');
+        });
+
+        // 点击页面其他区域隐藏菜单
+        document.addEventListener('click', () => {
+            document.getElementById('engineDropdown').classList.remove('show');
+        });
+
+        // 搜索功能
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.open(engines[currentEngine] + encodeURIComponent(query), '_blank');
             }
         });
 
-        // 复制结果
-        copyBtn.addEventListener('click', () => {
-            const processedLink = processLink();
-            if (processedLink) {
-                navigator.clipboard.writeText(processedLink);
-                alert('链接已复制到剪贴板！');
-            } else {
-                alert('请输入有效的链接！');
+        // 回车键搜索
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('searchButton').click();
             }
         });
-
-        // 夜间模式
-        darkModeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-            darkModeBtn.innerHTML = document.body.classList.contains('dark-mode') 
-                ? '<span class="material-icons">light_mode</span>'
-                : '<span class="material-icons">dark_mode</span>';
-        });
-
-        // 跳转到主页
-        homeButton.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-
-        // 初始化夜间模式
-        if(localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            darkModeBtn.innerHTML = '<span class="material-icons">light_mode</span>';
-        }
-
-        // 自动处理输入
-        inputLink.addEventListener('input', processLink);
     </script>
 </body>
 </html>
