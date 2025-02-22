@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>氢搜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
          /* 全局样式 */
@@ -255,6 +258,13 @@
     </style>
 </head>
 <body>
+     <!-- 夜间模式切换容器 -->
+<div class="mode-container">
+    <button class="mode-toggle" id="modeToggle">
+        <span class="material-icons">dark_mode</span>
+      夜
+    </button>
+</div>
     <div id="so" class="page">
 		<div class="search-container">
         <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
@@ -357,6 +367,29 @@
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 document.getElementById('searchButton').click();
+            }
+        });
+        
+        // 夜间模式切换
+        const modeToggle = document.getElementById('modeToggle');
+        const body = document.body;
+
+        // 检查 localStorage 中的模式设置
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            body.classList.add('dark-mode');
+            modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
+        }
+
+        // 切换模式
+        modeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('dark-mode', 'enabled');
+                modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
+            } else {
+                localStorage.setItem('dark-mode', 'disabled');
+                modeToggle.innerHTML = '<span class="material-icons">dark_mode</span> 夜';
             }
         });
     </script>
