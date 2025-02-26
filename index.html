@@ -6,15 +6,13 @@
     <title>氢搜</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-         /* 全局样式 */
-         :root {
+        /* 全局样式 */
+        :root {
             --primary-color: #42a5f5;
             --background-color: #f0f2f5;
             --text-color: #2d3436;
-			--text1-color: #ffffff;
+            --text1-color: #ffffff;
             --card-background: rgba(255, 255, 255, 0.9);
             --footer-background: rgba(255, 255, 255, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -25,7 +23,7 @@
             --primary-color: #bb86fc;
             --background-color: #1c1c1c;
             --text-color: #ffffff;
-			--text1-color: #2d3436;
+            --text1-color: #2d3436;
             --card-background: rgba(40, 40, 40, 0.9);
             --footer-background: rgba(40, 40, 40, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -33,25 +31,22 @@
         }
 
         body {
-			 /*font-family: '方正筑紫A圆体R', 方正筑紫A圆体R;*/
-           font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
-            position: relative;
-            ;
+            min-height: 90vh; /* 确保页面有足够的下滑空间 */
         }
-         /* 夜间模式切换容器 */
-         .mode-container {
+
+        .mode-container {
             position: fixed;
             bottom: 70px;
             right: 10px;
             z-index: 1000;
         }
 
-        /* 夜间模式切换按钮 */
         .mode-toggle {
             background-color: var(--card-background);
             border: none;
@@ -71,54 +66,10 @@
             color: #fff;
             transform: translateY(-2px);
         }
-            /* 移动端适配 */
-        @media (max-width: 768px) {
-            .player-content {
-                grid-template-columns: 1fr;
-            }
 
-            .playlist-section {
-                max-height: 200px;
-            }
-
-            .album-art {
-                width: 150px;
-                height: 150px;
-            }
-
-            .control-btn {
-                width: 40px;
-                height: 40px;
-            }
-
-            .volume-control {
-                position: static;
-                justify-content: center;
-                margin-top: 15px;
-            }
-
-            #volumeSlider {
-                width: 80px;
-            }
-
-            .controls {
-                padding-bottom: 60px;
-            }
-        }
-		
-		
-		
-		 h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1c1c1c;
-            margin-bottom: 20px;
-        }
-        /* 搜索 */
         .search-container {
-            top: 50px;
             position: relative;
-			margin: auto;
+            margin: 100px auto 0; /* 增加顶部间距 */
             background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(20px);
             border-radius: 16px;
@@ -129,17 +80,15 @@
             text-align: center;
         }
 
-         /* 搜索框容器 */
-         .search-box {
+        .search-box {
             display: flex;
             align-items: center;
-            gap: 8px; /* 缩小间距 */
+            gap: 8px;
             position: relative;
         }
 
-        /* 搜索引擎选择按钮 */
         #engineButton {
-            padding: 10px 12px; /* 缩小内边距 */
+            padding: 10px 12px;
             background: var(--primary-color);
             color: white;
             border: none;
@@ -150,42 +99,40 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap; /* 防止文字换行 */
+            white-space: nowrap;
         }
 
         #engineButton:hover {
             background: #F5BEFF;
         }
 
-        /* 搜索输入框 */
         #searchInput {
             flex: 1;
-            padding: 10px 12px; /* 缩小内边距 */
+            padding: 10px 12px;
             border: 2px solid var(--primary-color);
             border-radius: 8px;
-            font-size: 14px; /* 缩小字体 */
+            font-size: 14px;
             outline: none;
             background: rgba(255, 255, 255, 0.8);
             transition: all 0.3s ease;
-            min-width: 0; /* 防止溢出 */
+            min-width: 0;
         }
 
         #searchInput:focus {
-            border-color: var(--hover-color);
+            border-color: var(--primary-color);
             box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
         }
 
-        /* 搜索按钮 */
         #searchButton {
-            padding: 10px 16px; /* 缩小内边距 */
+            padding: 10px 16px;
             background: var(--primary-color);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px; /* 缩小字体 */
+            font-size: 14px;
             transition: all 0.3s ease;
-            white-space: nowrap; /* 防止文字换行 */
+            white-space: nowrap;
         }
 
         #searchButton:hover {
@@ -193,11 +140,9 @@
             transform: translateY(-1px);
         }
 
-        /* 引擎选择下拉菜单 */
         .engine-dropdown {
             position: absolute;
             left: 0;
-			color: black;
             top: 50px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
@@ -225,96 +170,68 @@
             background: rgba(66, 165, 245, 0.1);
         }
 
-        /* 移动端适配 */
         @media (max-width: 600px) {
             .search-container {
                 padding: 20px;
             }
 
             .search-box {
-                gap: 6px; /* 进一步缩小间距 */
+                gap: 6px;
             }
 
             #engineButton {
-                padding: 8px 10px; /* 进一步缩小内边距 */
-                font-size: 12px; /* 缩小字体 */
+                padding: 8px 10px;
+                font-size: 12px;
             }
 
             #searchInput {
-                padding: 8px 10px; /* 进一步缩小内边距 */
-                font-size: 12px; /* 缩小字体 */
+                padding: 8px 10px;
+                font-size: 12px;
             }
 
             #searchButton {
-                padding: 8px 12px; /* 进一步缩小内边距 */
-                font-size: 12px; /* 缩小字体 */
+                padding: 8px 12px;
+                font-size: 12px;
             }
 
             .engine-dropdown {
-                width: 120px; /* 缩小下拉菜单宽度 */
-                font-size: 12px; /* 缩小字体 */
+                width: 120px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
-     <!-- 夜间模式切换容器 -->
-<div class="mode-container">
-    <button class="mode-toggle" id="modeToggle">
-        <span class="material-icons">dark_mode</span>
-      夜
-    </button>
-</div>
-    <div id="so" class="page">
-		<div class="search-container">
+    <!-- 夜间模式切换容器 -->
+    <div class="mode-container">
+        <button class="mode-toggle" id="modeToggle">
+            <span class="material-icons">dark_mode</span>
+            夜
+        </button>
+    </div>
+
+    <!-- 搜索容器 -->
+    <div class="search-container">
         <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
         <div class="search-box">
-            <button id="engineButton">
-                
-                百度 ▼
-            </button>
+            <button id="engineButton">百度 ▼</button>
             <input type="text" id="searchInput" placeholder="输入关键词...">
             <button id="searchButton">搜索</button>
             <div class="engine-dropdown" id="engineDropdown">
-                <div class="engine-item" data-engine="baidu">
-                    
-                    百度
-                </div>
-                <div class="engine-item" data-engine="google">
-                    
-                    Google
-                </div>
-                <div class="engine-item" data-engine="bing">
-                    
-                    Bing
-                </div>
-                <div class="engine-item" data-engine="duckduckgo">
-                    DuckDuckGo
-                </div>
-                
-                <div class="engine-item" data-engine="CSDN">
-                    CSDN
-                </div>
-                <div class="engine-item" data-engine="GitHub">
-                    GitHub
-                </div>
-                <div class="engine-item" data-engine="bokeyuan">
-                    博客园
-                </div>
-                <div class="engine-item" data-engine="yinghua">
-                    樱花动漫
-                </div>
-                <div class="engine-item" data-engine="yandex">
-                    yandex
-                </div>
-                <div class="engine-item" data-engine="mengniang">
-                    萌娘百科
-                </div>
+                <div class="engine-item" data-engine="baidu">百度</div>
+                <div class="engine-item" data-engine="google">Google</div>
+                <div class="engine-item" data-engine="bing">Bing</div>
+                <div class="engine-item" data-engine="duckduckgo">DuckDuckGo</div>
+                <div class="engine-item" data-engine="CSDN">CSDN</div>
+                <div class="engine-item" data-engine="GitHub">GitHub</div>
+                <div class="engine-item" data-engine="bokeyuan">博客园</div>
+                <div class="engine-item" data-engine="yinghua">樱花动漫</div>
+                <div class="engine-item" data-engine="yandex">yandex</div>
+                <div class="engine-item" data-engine="mengniang">萌娘百科</div>
             </div>
         </div>
     </div>
 
-	</div>
     <script>
         // 搜索引擎配置
         const engines = {
@@ -336,10 +253,7 @@
         document.querySelectorAll('.engine-item').forEach(item => {
             item.addEventListener('click', () => {
                 currentEngine = item.dataset.engine;
-                document.getElementById('engineButton').innerHTML = `
-                    
-                    ${item.textContent.trim()} ▼
-                `;
+                document.getElementById('engineButton').innerHTML = `${item.textContent.trim()} ▼`;
                 document.getElementById('engineDropdown').classList.remove('show');
             });
         });
@@ -369,7 +283,7 @@
                 document.getElementById('searchButton').click();
             }
         });
-        
+
         // 夜间模式切换
         const modeToggle = document.getElementById('modeToggle');
         const body = document.body;
@@ -392,6 +306,38 @@
                 modeToggle.innerHTML = '<span class="material-icons">dark_mode</span> 夜';
             }
         });
+
+        // 自动聚焦搜索框功能
+        const searchInput = document.getElementById('searchInput');
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // 监听滚动事件
+        window.addEventListener('scroll', debounce(() => {
+            if (window.scrollY > 1) {
+                searchInput.focus();
+            }
+        }, 100));
+
+        // 移动端触摸事件
+        let startY = 0;
+        window.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+
+        window.addEventListener('touchmove', debounce((e) => {
+            const endY = e.touches[0].clientY;
+            if (endY - startY > 10) {
+                searchInput.focus();
+            }
+        }, 100));
     </script>
 </body>
 </html>
