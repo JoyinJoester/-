@@ -293,18 +293,88 @@
         function isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
+        // 新增变量，用于控制滑动聚焦
+let isDropdownOpen = false;
 
-        if (isMobile()) {
-            document.getElementById('engineButton').addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.getElementById('engineDropdown').classList.toggle('show');
-            });
+// 修改显示/隐藏引擎选择菜单的逻辑
+if (isMobile()) {
+    document.getElementById('engineButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('engineDropdown').classList.toggle('show');
+        isDropdownOpen = document.getElementById('engineDropdown').classList.contains('show');
+        if (isDropdownOpen) {
+            // 禁用滑动聚焦
+            window.removeEventListener('scroll', debounce(scrollFocus, 100));
+            window.removeEventListener('touchmove', debounce(touchMoveFocus, 100));
+        } else {
+            // 启用滑动聚焦
+            window.addEventListener('scroll', debounce(scrollFocus, 100));
+            window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
+        }
+    });
 
-            // 点击页面其他区域隐藏菜单
-            document.addEventListener('click', () => {
-                document.getElementById('engineDropdown').classList.remove('show');
+    // 点击页面其他区域隐藏菜单
+    document.addEventListener('click', () => {
+        if (document.getElementById('engineDropdown').classList.contains('show')) {
+            document.getElementById('engineDropdown').classList.remove('show');
+            isDropdownOpen = false;
+            // 启用滑动聚焦
+            window.addEventListener('scroll', debounce(scrollFocus, 100));
+            window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
+        }
+    });
+}
+
+// 新增滚动聚焦函数
+function scrollFocus() {
+    if (!isDropdownOpen && window.scrollY > 1) {
+        searchInput.focus();
+    }
+}
+
+// 新增触摸移动聚焦函数
+function touchMoveFocus(e) {
+    if (!isDropdownOpen) {
+        const endY = e.touches[0].clientY;
+        if (startY - endY > 10) {
+            searchInput.focus();
+        }
+    }
+}
+
+// 移动端滑动选择搜索引擎
+if (isMobile()) {
+    let startYMobile = 0;
+    let isDraggingMobile = false;
+
+    document.getElementById('engineDropdown').addEventListener('touchstart', (e) => {
+        startYMobile = e.touches[0].clientY;
+        isDraggingMobile = true;
+    });
+
+    document.getElementById('engineDropdown').addEventListener('touchmove', (e) => {
+        if (isDraggingMobile) {
+            const endYMobile = e.touches[0].clientY;
+            const items = document.querySelectorAll('.engine-item');
+            items.forEach((item) => {
+                const rect = item.getBoundingClientRect();
+                if (rect.top <= searchContainer.getBoundingClientRect().top && rect.bottom >= searchContainer.getBoundingClientRect().top) {
+                    currentEngine = item.dataset.engine;
+                    document.getElementById('engineButton').innerHTML = `${item.textContent.trim()} ▼`;
+                    document.getElementById('engineDropdown').classList.remove('show');
+                    isDropdownOpen = false;
+                    // 启用滑动聚焦
+                    window.addEventListener('scroll', debounce(scrollFocus, 100));
+                    window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
+                }
             });
         }
+    });
+
+    document.getElementById('engineDropdown').addEventListener('touchend', () => {
+        isDraggingMobile = false;
+    });
+}
 
         // 搜索功能
         document.getElementById('searchButton').addEventListener('click', () => {
@@ -374,9 +444,7 @@
         // 监听滚动事件
         window.addEventListener('scroll', debounce(() => {
             if (window.scrollY > 1) {
-                if (isDragging) { // 添加判断逻辑，只有在滑动后才聚焦
-                    searchInput.focus();
-                }
+                searchInput.focus();
             }
         }, 100));
 
@@ -388,9 +456,7 @@
         window.addEventListener('touchmove', debounce((e) => {
             const endY = e.touches[0].clientY;
             if (startY - endY > 10) { // 修改为上滑聚焦
-                if (isDragging) { // 添加判断逻辑，只有在滑动后才聚焦
-                    searchInput.focus();
-                }
+                searchInput.focus();
             }
         }, 100));
     </script>
