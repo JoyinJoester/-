@@ -147,7 +147,6 @@
             background: #F5BEFF;
             transform: translateY(-1px);
         }
-
         .engine-dropdown {
             position: absolute;
             left: 0;
@@ -241,224 +240,278 @@
     <div class="search-container" id="searchContainer">
         <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
         <div class="search-box">
-            <button id="engineButton">百度 ▼</button>
+            <!-- 删除现有的搜索引擎切换按钮 -->
             <input type="text" id="searchInput" placeholder="输入关键词...">
             <button id="searchButton">搜索</button>
-            <div class="engine-dropdown" id="engineDropdown">
-                <div class="engine-item" data-engine="baidu">百度</div>
-                <div class="engine-item" data-engine="google">Google</div>
-                <div class="engine-item" data-engine="bing">Bing</div>
-                <div class="engine-item" data-engine="duckduckgo">DuckDuckGo</div>
-                <div class="engine-item" data-engine="so360">360搜索</div>
-                <div class="engine-item" data-engine="sogou">搜狗</div>
-                <div class="engine-item" data-engine="CSDN">CSDN</div>
-                <div class="engine-item" data-engine="GitHub">GitHub</div>
-                <div class="engine-item" data-engine="bokeyuan">博客园</div>
-                <div class="engine-item" data-engine="yinghua">樱花动漫</div>
-                <div class="engine-item" data-engine="yandex">yandex</div>
-                <div class="engine-item" data-engine="mengniang">萌娘百科</div>
+            <div class="engine-scroll" id="engineScroll">
+                <div class="engine-scroll-inner">
+                    <span data-engine="baidu">百度</span>
+                    <span data-engine="google">谷歌</span>
+                    <span data-engine="bing">必应</span>
+                    <span data-engine="duckduckgo">DuckDuckGo</span>
+                    <span data-engine="so360">360搜索</span>
+                    <span data-engine="CSDN">CSDN</span>
+                    <span data-engine="github">GitHub</span>
+                    <span data-engine="bokeyuan">博客园</span>
+                    <span data-engine="yinghua">樱花搜索</span>
+                    <span data-engine="yandex">Yandex</span>
+                    <span data-engine="mengniang">萌娘百科</span>
+                    <span data-engine="sogou">搜狗</span>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // 搜索引擎配置
-        const engines = {
-            baidu: "https://www.baidu.com/s?wd=",
-            google: "https://www.google.com/search?q=",
-            bing: "https://www.bing.com/search?q=",
-            duckduckgo: "https://duckduckgo.com/?q=",
-            so360: "https://www.so.com/s?q=",
-            CSDN: "https://so.csdn.net/so/search?q=",
-            github: "https://github.com/search?q=",
-            bokeyuan: "https://zzk.cnblogs.com/s?w=",
-            yinghua: "https://www.yinghua8.net/lookfor.html?wd=",
-            yandex: "https://yandex.com/search/?text=",
-            mengniang: "https://zh.moegirl.org.cn/index.php?search=",
-            sogou: "https://www.sogou.com/web?query=",
-        };
-
-        let currentEngine = "baidu";
-
-        // 切换搜索引擎
-        document.querySelectorAll('.engine-item').forEach(item => {
-            item.addEventListener('click', () => {
-                currentEngine = item.dataset.engine;
-                document.getElementById('engineButton').innerHTML = `${item.textContent.trim()} ▼`;
-                document.getElementById('engineDropdown').classList.remove('show');
-            });
-        });
-
-        // 显示/隐藏引擎选择菜单，仅在移动端触发
-        function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    <style>
+        /* 新增滚动控件样式 */
+       .search-box {
+            display: flex;
+            flex-direction: column; /* 让子元素垂直排列 */
         }
-        // 新增变量，用于控制滑动聚焦
-let isDropdownOpen = false;
-
-// 修改显示/隐藏引擎选择菜单的逻辑
-if (isMobile()) {
-    document.getElementById('engineButton').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('engineDropdown').classList.toggle('show');
-        isDropdownOpen = document.getElementById('engineDropdown').classList.contains('show');
-        if (isDropdownOpen) {
-            // 禁用滑动聚焦
-            window.removeEventListener('scroll', debounce(scrollFocus, 100));
-            window.removeEventListener('touchmove', debounce(touchMoveFocus, 100));
-        } else {
-            // 启用滑动聚焦
-            window.addEventListener('scroll', debounce(scrollFocus, 100));
-            window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
+   .engine-scroll {
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-top: 10px; /* 增加一些与上方元素的间距 */
         }
-    });
-
-    // 点击页面其他区域隐藏菜单
-    document.addEventListener('click', () => {
-        if (document.getElementById('engineDropdown').classList.contains('show')) {
-            document.getElementById('engineDropdown').classList.remove('show');
-            isDropdownOpen = false;
-            // 启用滑动聚焦
-            window.addEventListener('scroll', debounce(scrollFocus, 100));
-            window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
+   .engine-scroll-inner {
+    margin-top: 10px;
+            height: 50px;
+            display: inline-block;
         }
-    });
-}
+   .search-box {
+            display: flex;
+            flex-direction: row; /* 改回横向排列 */
+            align-items: center;
+            gap: 8px;
+        }
+   .search-box > input {
+            flex: 1; /* 输入框占据剩余空间 */
+            margin: 0; /* 移除外边距 */
+        }
+   .search-box > button {
+            margin: 0; /* 移除外边距 */
+            white-space: nowrap; /* 防止文字换行 */
+        }
+   /* 新增滚动控件样式 */
+       .engine-scroll {
+            order: 1; /* 强制显示在第二行 */
+            width: calc(100% + 40px); /* 抵消父容器padding */
+            margin: 15px -20px -10px; /* 对齐父容器边缘 */
+            overflow-x: auto;
+            white-space: nowrap;
+        }
 
-// 新增滚动聚焦函数
-function scrollFocus() {
-    if (!isDropdownOpen && window.scrollY > 1) {
-        searchInput.focus();
+       .search-box {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap; /* 允许元素换行 */
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+   .search-box > input {
+            flex: 1; /* 输入框占据剩余空间 */
+            margin: 0; /* 移除外边距 */
+        }
+   .search-box > button {
+            margin: 0; /* 移除外边距 */
+            white-space: nowrap; /* 防止文字换行 */
+        }
+   /* 新增滚动控件样式 */
+       .engine-scroll {
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-top: 10px;
+            scrollbar-width: none; /* 隐藏滚动条 */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+       .engine-scroll::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+       /* 修改前 */
+       .engine-scroll span {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px; /* 增大圆角 */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        /* 修改后 */
+       .engine-scroll span {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 12px; /* 增大圆角至12px */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+       .engine-scroll span.selected-engine {
+            background-color: #42a5f5; 
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(66, 165, 245, 0.4);
+            border-radius: 12px; /* 添加选中状态的圆角 */
+        }
+
+        /* 媒体查询中的修改 */
+        @media (max-width: 600px) {
+            .engine-scroll span {
+                border-radius: 10px; /* 移动端稍小的圆角 */
+                padding: 6px 12px;
+            }
+        }
+   .engine-scroll-inner {
+            display: inline-block;
+        }
+   .engine-scroll span {
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #808080; /* 灰色背景 */
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+   .engine-scroll span:hover {
+            background-color: #a9a9a9; /* 悬停时颜色稍亮 */
+        }
+    /* 选中的搜索引擎样式，改为蓝色 */
+   .engine-scroll span.selected-engine {
+        background-color: #42a5f5; /* 蓝色背景 */
     }
-}
+</style>
+<script>
+    // 搜索引擎配置
+    const engines = {
+        baidu: "https://www.baidu.com/s?wd=",
+        google: "https://www.google.com/search?q=",
+        bing: "https://www.bing.com/search?q=",
+        duckduckgo: "https://duckduckgo.com/?q=",
+        so360: "https://www.so.com/s?q=",
+        CSDN: "https://so.csdn.net/so/search?q=",
+        github: "https://github.com/search?q=",
+        bokeyuan: "https://zzk.cnblogs.com/s?w=",
+        yinghua: "https://www.yinghua8.net/lookfor.html?wd=",
+        yandex: "https://yandex.com/search/?text=",
+        mengniang: "https://zh.moegirl.org.cn/index.php?search=",
+        sogou: "https://www.sogou.com/web?query=",
+    };
 
-// 新增触摸移动聚焦函数
-function touchMoveFocus(e) {
-    if (!isDropdownOpen) {
-        const endY = e.touches[0].clientY;
-        if (startY - endY > 10) {
+    let currentEngine = "baidu";
+
+    // 切换搜索引擎
+    document.querySelectorAll('.engine-scroll span').forEach(item => {
+        item.addEventListener('click', () => {
+            // 移除所有选中状态
+            document.querySelectorAll('.engine-scroll span').forEach(el => 
+                el.classList.remove('selected-engine'));
+            // 添加当前选中状态
+            item.classList.add('selected-engine');
+            currentEngine = item.dataset.engine;
+        });
+    });
+
+    // 初始化默认选中
+    document.querySelector('[data-engine="baidu"]').classList.add('selected-engine');
+
+    // 搜索功能
+    document.getElementById('searchButton').addEventListener('click', () => {
+        const query = document.getElementById('searchInput').value.trim();
+        if (query) {
+            window.open(engines[currentEngine] + encodeURIComponent(query), '_blank');
+        }
+    });
+
+    // 回车键搜索
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('searchButton').click();
+        }
+    });
+
+    // 夜间模式切换
+    const modeToggle = document.getElementById('modeToggle');
+    const body = document.body;
+
+    // 检查 localStorage 中的模式设置
+    if (localStorage.getItem('dark-mode') === 'enabled') {
+        body.classList.add('dark-mode');
+        modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
+    }
+
+    // 切换模式
+    modeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+
+        if (body.classList.contains('dark-mode')) {
+            localStorage.setItem('dark-mode', 'enabled');
+            modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
+        } else {
+            localStorage.setItem('dark-mode', 'disabled');
+            modeToggle.innerHTML = '<span class="material-icons">dark_mode</span> 夜';
+        }
+    });
+
+    // 自动聚焦搜索框功能
+    const searchInput = document.getElementById('searchInput');
+    const searchContainer = document.getElementById('searchContainer');
+
+    let startY = 0;
+    let isDragging = false;
+
+    searchContainer.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        isDragging = true;
+        searchContainer.classList.add('dragging');
+    });
+
+    searchContainer.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+            const endY = e.touches[0].clientY;
+            if (endY - startY > 10) {
+                searchInput.focus();
+            }
+        }
+    });
+
+    searchContainer.addEventListener('touchend', () => {
+        isDragging = false;
+        searchContainer.classList.remove('dragging');
+    });
+
+    // 防抖函数
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // 监听滚动事件
+    window.addEventListener('scroll', debounce(() => {
+        if (window.scrollY > 1) {
             searchInput.focus();
         }
-    }
-}
+    }, 100));
 
-// 移动端滑动选择搜索引擎
-if (isMobile()) {
-    let startYMobile = 0;
-    let isDraggingMobile = false;
-
-    document.getElementById('engineDropdown').addEventListener('touchstart', (e) => {
-        startYMobile = e.touches[0].clientY;
-        isDraggingMobile = true;
+    // 移动端触摸事件
+    window.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
     });
 
-    document.getElementById('engineDropdown').addEventListener('touchmove', (e) => {
-        if (isDraggingMobile) {
-            const endYMobile = e.touches[0].clientY;
-            const items = document.querySelectorAll('.engine-item');
-            items.forEach((item) => {
-                const rect = item.getBoundingClientRect();
-                if (rect.top <= searchContainer.getBoundingClientRect().top && rect.bottom >= searchContainer.getBoundingClientRect().top) {
-                    currentEngine = item.dataset.engine;
-                    document.getElementById('engineButton').innerHTML = `${item.textContent.trim()} ▼`;
-                    document.getElementById('engineDropdown').classList.remove('show');
-                    isDropdownOpen = false;
-                    // 启用滑动聚焦
-                    window.addEventListener('scroll', debounce(scrollFocus, 100));
-                    window.addEventListener('touchmove', debounce(touchMoveFocus, 100));
-                }
-            });
+    window.addEventListener('touchmove', debounce((e) => {
+        const endY = e.touches[0].clientY;
+        if (endY - startY > 10) {
+            searchInput.focus();
         }
-    });
-
-    document.getElementById('engineDropdown').addEventListener('touchend', () => {
-        isDraggingMobile = false;
-    });
-}
-
-        // 搜索功能
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const query = document.getElementById('searchInput').value.trim();
-            if (query) {
-                window.open(engines[currentEngine] + encodeURIComponent(query), '_blank');
-            }
-        });
-
-        // 回车键搜索
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('searchButton').click();
-            }
-        });
-
-        // 夜间模式切换
-        const modeToggle = document.getElementById('modeToggle');
-        const body = document.body;
-
-        // 检查 localStorage 中的模式设置
-        if (localStorage.getItem('dark-mode') === 'enabled') {
-            body.classList.add('dark-mode');
-            modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
-        }
-
-        // 切换模式
-        modeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-
-            if (body.classList.contains('dark-mode')) {
-                localStorage.setItem('dark-mode', 'enabled');
-                modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
-            } else {
-                localStorage.setItem('dark-mode', 'disabled');
-                modeToggle.innerHTML = '<span class="material-icons">dark_mode</span> 夜';
-            }
-        });
-
-        // 自动聚焦搜索框功能
-        const searchInput = document.getElementById('searchInput');
-        const searchContainer = document.getElementById('searchContainer');
-
-        let startY = 0;
-        let isDragging = false;
-
-        searchContainer.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            isDragging = true;
-            searchContainer.classList.add('dragging');
-        });
-
-        searchContainer.addEventListener('touchmove', (e) => {
-            if (isDragging) {
-                const endY = e.touches[0].clientY;
-                if (startY - endY > 10) { // 修改为上滑聚焦
-                    searchInput.focus();
-                }
-            }
-        });
-
-        searchContainer.addEventListener('touchend', () => {
-            isDragging = false;
-            searchContainer.classList.remove('dragging');
-        });
-
-        // 监听滚动事件
-        window.addEventListener('scroll', debounce(() => {
-            if (window.scrollY > 1) {
-                searchInput.focus();
-            }
-        }, 100));
-
-        // 移动端触摸事件
-        window.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-        });
-
-        window.addEventListener('touchmove', debounce((e) => {
-            const endY = e.touches[0].clientY;
-            if (startY - endY > 10) { // 修改为上滑聚焦
-                searchInput.focus();
-            }
-        }, 100));
-    </script>
+    }, 100));
+</script>
 </body>
 </html>
