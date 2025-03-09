@@ -360,7 +360,7 @@
         searchContainer.addEventListener('touchmove', (e) => {
             if (isDragging) {
                 const endY = e.touches[0].clientY;
-                if (endY - startY > 10) {
+                if (startY - endY > 10) { // 修改为上滑聚焦
                     searchInput.focus();
                 }
             }
@@ -371,19 +371,12 @@
             searchContainer.classList.remove('dragging');
         });
 
-        // 防抖函数
-        function debounce(func, wait) {
-            let timeout;
-            return function (...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
         // 监听滚动事件
         window.addEventListener('scroll', debounce(() => {
             if (window.scrollY > 1) {
-                searchInput.focus();
+                if (isDragging) { // 添加判断逻辑，只有在滑动后才聚焦
+                    searchInput.focus();
+                }
             }
         }, 100));
 
@@ -394,8 +387,10 @@
 
         window.addEventListener('touchmove', debounce((e) => {
             const endY = e.touches[0].clientY;
-            if (endY - startY > 10) {
-                searchInput.focus();
+            if (startY - endY > 10) { // 修改为上滑聚焦
+                if (isDragging) { // 添加判断逻辑，只有在滑动后才聚焦
+                    searchInput.focus();
+                }
             }
         }, 100));
     </script>
