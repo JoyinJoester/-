@@ -263,18 +263,42 @@
     </div>
     <style>
         /* 新增滚动控件样式 */
-       .search-box {
+        .search-box {
             display: flex;
             flex-direction: column; /* 让子元素垂直排列 */
         }
-   .engine-scroll {
+        .engine-scroll {
+            margin-left: 100px;
             width: 100%;
             overflow-x: auto;
             white-space: nowrap;
             margin-top: 10px; /* 增加一些与上方元素的间距 */
+            /* 自定义滚动条样式 */
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0.1);
         }
-   .engine-scroll-inner {
-    margin-top: 10px;
+        /* 滚动条整体样式 */
+        .engine-scroll::-webkit-scrollbar {
+            height: 8px; /* 滚动条高度 */
+        }
+        /* 滚动条轨道 */
+        .engine-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        /* 滚动条滑块 */
+        .engine-scroll::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+        /* 滚动条滑块悬停效果 */
+        .engine-scroll::-webkit-scrollbar-thumb:hover {
+            background: darken(var(--primary-color), 10%);
+        }
+        .engine-scroll-inner {
+            margin-left: 20px;
+            margin-right: 30px;
+            margin-top: 10px;
             height: 50px;
             display: inline-block;
         }
@@ -474,7 +498,8 @@
     searchContainer.addEventListener('touchmove', (e) => {
         if (isDragging) {
             const endY = e.touches[0].clientY;
-            if (endY - startY > 10) {
+            // 修改为上滑触发聚焦
+            if (startY - endY > 10) { 
                 searchInput.focus();
             }
         }
@@ -508,7 +533,8 @@
 
     window.addEventListener('touchmove', debounce((e) => {
         const endY = e.touches[0].clientY;
-        if (endY - startY > 10) {
+        // 修改为上滑触发聚焦
+        if (startY - endY > 10) { 
             searchInput.focus();
         }
     }, 100));
