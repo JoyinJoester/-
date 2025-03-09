@@ -10,36 +10,44 @@
         /* 全局样式 */
         :root {
             --primary-color: #42a5f5;
-            --background-color: #f0f2f5;
+            --background-color: #f0f2f5; /* 亮色背景，用于白天模式 */
             --text-color: #2d3436;
             --text1-color: #ffffff;
             --card-background: rgba(255, 255, 255, 0.9);
             --footer-background: rgba(255, 255, 255, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --background-pattern: none; /* 去掉白天模式背景图案 */
         }
 
         body.dark-mode {
             --primary-color: #bb86fc;
-            --background-color: #1c1c1c;
+            --background-color: #121212; /* 暗色背景，用于夜间模式 */
             --text-color: #ffffff;
             --text1-color: #2d3436;
             --card-background: rgba(40, 40, 40, 0.9);
             --footer-background: rgba(40, 40, 40, 0.9);
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --background-pattern: none; /* 去掉夜间模式背景图案 */
         }
 
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--background-color);
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
-            min-height: 90vh; /* 确保页面有足够的下滑空间 */
+            height: 100vh; 
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--background-color);
+            background-image: none; /* 去掉背景图像 */
         }
 
+        /* 其他样式保持不变 */
         .mode-container {
             position: fixed;
             bottom: 70px;
@@ -67,14 +75,13 @@
             transform: translateY(-2px);
         }
 
+        /* 修改搜索容器样式 */
         .search-container {
             position: relative;
-            margin: 100px auto 0; /* 增加顶部间距 */
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(20px);
+            background: rgba(128, 128, 128, 0.3); /* 灰色背景 */
+            backdrop-filter: blur(20px); /* 高斯模糊效果 */
             border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
             width: 80%;
             max-width: 600px;
             text-align: center;
@@ -109,7 +116,8 @@
         #searchInput {
             flex: 1;
             padding: 10px 12px;
-            border: 2px solid var(--primary-color);
+            /* 去掉搜索框边框 */
+            border: none; 
             border-radius: 8px;
             font-size: 14px;
             outline: none;
@@ -144,7 +152,8 @@
             position: absolute;
             left: 0;
             top: 50px;
-            background: rgba(255, 255, 255, 0.95);
+            /* 修改背景颜色 */
+            background: rgba(40, 40, 40, 0.9); 
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
@@ -160,6 +169,8 @@
         .engine-item {
             padding: 12px 20px;
             cursor: pointer;
+            /* 修改文字颜色 */
+            color: #ffffff; 
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -199,6 +210,22 @@
                 font-size: 12px;
             }
         }
+        /* 给搜索容器添加动态效果 */
+        .search-container {
+            position: relative;
+            background: rgba(128, 128, 128, 0.3); /* 灰色背景 */
+            backdrop-filter: blur(20px); /* 高斯模糊效果 */
+            border-radius: 16px;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .search-container.dragging {
+            transform: translateY(10px);
+        }
     </style>
 </head>
 <body>
@@ -211,7 +238,7 @@
     </div>
 
     <!-- 搜索容器 -->
-    <div class="search-container">
+    <div class="search-container" id="searchContainer">
         <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
         <div class="search-box">
             <button id="engineButton">百度 ▼</button>
@@ -223,7 +250,6 @@
                 <div class="engine-item" data-engine="bing">Bing</div>
                 <div class="engine-item" data-engine="duckduckgo">DuckDuckGo</div>
                 <div class="engine-item" data-engine="so360">360搜索</div>
-                <div class="engine-item" data-engine="toutiao">今日头条</div>
                 <div class="engine-item" data-engine="sogou">搜狗</div>
                 <div class="engine-item" data-engine="CSDN">CSDN</div>
                 <div class="engine-item" data-engine="GitHub">GitHub</div>
@@ -243,7 +269,6 @@
             bing: "https://www.bing.com/search?q=",
             duckduckgo: "https://duckduckgo.com/?q=",
             so360: "https://www.so.com/s?q=",
-            toutiao: "https://www.toutiao.com/search/?keyword=",
             CSDN: "https://so.csdn.net/so/search?q=",
             github: "https://github.com/search?q=",
             bokeyuan: "https://zzk.cnblogs.com/s?w=",
@@ -264,16 +289,22 @@
             });
         });
 
-        // 显示/隐藏引擎选择菜单
-        document.getElementById('engineButton').addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.getElementById('engineDropdown').classList.toggle('show');
-        });
+        // 显示/隐藏引擎选择菜单，仅在移动端触发
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
 
-        // 点击页面其他区域隐藏菜单
-        document.addEventListener('click', () => {
-            document.getElementById('engineDropdown').classList.remove('show');
-        });
+        if (isMobile()) {
+            document.getElementById('engineButton').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('engineDropdown').classList.toggle('show');
+            });
+
+            // 点击页面其他区域隐藏菜单
+            document.addEventListener('click', () => {
+                document.getElementById('engineDropdown').classList.remove('show');
+            });
+        }
 
         // 搜索功能
         document.getElementById('searchButton').addEventListener('click', () => {
@@ -315,6 +346,30 @@
 
         // 自动聚焦搜索框功能
         const searchInput = document.getElementById('searchInput');
+        const searchContainer = document.getElementById('searchContainer');
+
+        let startY = 0;
+        let isDragging = false;
+
+        searchContainer.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            isDragging = true;
+            searchContainer.classList.add('dragging');
+        });
+
+        searchContainer.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                const endY = e.touches[0].clientY;
+                if (endY - startY > 10) {
+                    searchInput.focus();
+                }
+            }
+        });
+
+        searchContainer.addEventListener('touchend', () => {
+            isDragging = false;
+            searchContainer.classList.remove('dragging');
+        });
 
         // 防抖函数
         function debounce(func, wait) {
@@ -333,7 +388,6 @@
         }, 100));
 
         // 移动端触摸事件
-        let startY = 0;
         window.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
         });
