@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全能搜索主页</title>
+    <title>搜索</title>
     <style>
         :root {
             --primary-color: #f0f0f0;
@@ -116,7 +116,7 @@
             display: none;
             z-index: 100;
             min-width: 220px;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             border: 1px solid var(--engine-border);
             overscroll-behavior: contain;
@@ -321,52 +321,48 @@
         const engines = {
             baidu: { 
                 url: "https://www.baidu.com/s?wd=", 
-                icon: "https://www.baidu.com/favicon.ico", 
+                icon: "image/baidu.ico", 
                 placeholder: "百度一下..." 
             },
             google: { 
                 url: "https://www.google.com/search?q=", 
-                icon: "https://www.google.com/favicon.ico",
+                icon: "image/google.png",
                 placeholder: "Google 搜索..." 
             },
             bing: { 
                 url: "https://www.bing.com/search?q=", 
-                icon: "https://www.bing.com/favicon.ico", 
+                icon: "image/bing.ico", 
                 placeholder: "必应搜索..." 
             },
-            duckduckgo: { 
-                url: "https://duckduckgo.com/?q=", 
-                icon: "https://duckduckgo.com/favicon.ico",
-                placeholder: "DuckDuckGo 搜索..." 
-            },
+            
             so360: { 
                 url: "https://www.so.com/s?q=", 
-                icon: "https://www.so.com/favicon.ico", 
+                icon: "image/360.ico", 
                 placeholder: "360 搜索..." 
             },
             CSDN: { 
                 url: "https://so.csdn.net/so/search?q=", 
-                icon: "https://csdnimg.cn/public/favicon.ico", 
+                icon: "image/csdn.ico", 
                 placeholder: "CSDN 搜索..." 
             },
             github: { 
                 url: "https://github.com/search?q=", 
-                icon: "https://github.com/favicon.ico", 
+                icon: "image/github.ico", 
                 placeholder: "GitHub 搜索..." 
             },
             mengniang: { 
                 url: "https://zh.moegirl.org.cn/index.php?search=", 
-                icon: "https://zh.moegirl.org.cn/favicon.ico", 
+                icon: "image/mengniang.ico", 
                 placeholder: "萌娘百科..." 
             },
             yandex: { 
                 url: "https://yandex.com/search/?text=", 
-                icon: "https://yastatic.net/lego/_/La6qi18Z8LwgnZdsAr1qy1GwC4g.ico",
+                icon: "image/yandex.png",
                 placeholder: "Yandex 搜索..." 
             },
             sogou: { 
                 url: "https://www.sogou.com/web?query=", 
-                icon: "https://www.sogou.com/favicon.ico", 
+                icon: "image/sougo.ico", 
                 placeholder: "搜狗搜索..." 
             }
         };
