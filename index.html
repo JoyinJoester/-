@@ -3,541 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氢搜</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>全能搜索主页</title>
     <style>
-        /* 全局样式 */
         :root {
-            --primary-color: #42a5f5;
-            --background-color: #f0f2f5; /* 亮色背景，用于白天模式 */
-            --text-color: #2d3436;
-            --text1-color: #ffffff;
-            --card-background: rgba(255, 255, 255, 0.9);
-            --footer-background: rgba(255, 255, 255, 0.9);
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.2);
-            --background-pattern: none; /* 去掉白天模式背景图案 */
+            --primary-color: #f0f0f0;
+            --bg-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333333;
+            --accent-color: #0066ff;
+            --engine-border: rgba(0, 0, 0, 0.1);
+            --clock-color: #0066ff; /* 新增白天时钟颜色 */
         }
 
-        body.dark-mode {
-            --primary-color: #bb86fc;
-            --background-color: #121212; /* 暗色背景，用于夜间模式 */
+        [data-theme="dark"] {
+            --primary-color: #2d2d2d;
+            --bg-color: #1a1a1a;
+            --card-bg: rgba(45, 45, 45, 0.8);
             --text-color: #ffffff;
-            --text1-color: #2d3436;
-            --card-background: rgba(40, 40, 40, 0.9);
-            --footer-background: rgba(40, 40, 40, 0.9);
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
-            --background-pattern: none; /* 去掉夜间模式背景图案 */
+            --accent-color: #00ff88;
+            --engine-border: rgba(255, 255, 255, 0.1);
+            --clock-color: #00ff88; /* 新增夜间时钟颜色 */
         }
 
         body {
-            font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 0;
-            color: var(--text-color);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            height: 100vh; 
-            overflow: hidden;
+            min-height: 100vh;
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            background-color: var(--background-color);
-            background-image: none; /* 去掉背景图像 */
-        }
-
-        /* 其他样式保持不变 */
-        .mode-container {
-            position: fixed;
-            bottom: 70px;
-            right: 10px;
-            z-index: 1000;
-        }
-
-        .mode-toggle {
-            background-color: var(--card-background);
-            border: none;
+            background-color: var(--bg-color);
             color: var(--text-color);
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            gap: 8px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: all 0.3s ease;
         }
 
-        .mode-toggle:hover {
-            background-color: var(--primary-color);
-            color: #fff;
-            transform: translateY(-2px);
-        }
-
-        /* 修改搜索容器样式 */
         .search-container {
+            width: 90%;
+            max-width: 1000px;
             position: relative;
-            background: rgba(128, 128, 128, 0.3); /* 灰色背景 */
-            backdrop-filter: blur(20px); /* 高斯模糊效果 */
-            border-radius: 16px;
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
-            text-align: center;
+            margin-top: -20px; /* 整体上移 */
         }
 
-        .search-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-        }
-
-        #engineButton {
-            padding: 10px 12px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-
-        #engineButton:hover {
-            background: #F5BEFF;
-        }
-
-        #searchInput {
-            flex: 1;
-            padding: 10px 12px;
-            /* 去掉搜索框边框 */
-            border: none; 
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            background: rgba(255, 255, 255, 0.8);
-            transition: all 0.3s ease;
-            min-width: 0;
-        }
-
-        #searchInput:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
-        }
-
-        #searchButton {
-            padding: 10px 16px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        #searchButton:hover {
-            background: #F5BEFF;
-            transform: translateY(-1px);
-        }
-        .engine-dropdown {
+        /* 美化后的时钟样式 */
+        .live-clock {
             position: absolute;
-            left: 0;
-            top: 50px;
-            /* 修改背景颜色 */
-            background: rgba(40, 40, 40, 0.9); 
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            z-index: 100;
-            display: none;
-            width: 160px;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 50px; 
+            font-weight: 600; 
+            opacity: 0.9;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            color: var(--clock-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        .engine-dropdown.show {
-            display: block;
+        [data-theme="dark"] .live-clock {
+            text-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); /* 暗色模式发光效果 */
         }
 
-        .engine-item {
-            padding: 12px 20px;
+        .live-clock:hover {
+            opacity: 1;
+            transform: translateX(-50%) scale(1.02);
+        }
+
+        .search-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 调整后的引擎切换按钮 */
+        .engine-switch {
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--engine-border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
             cursor: pointer;
-            /* 修改文字颜色 */
-            color: #ffffff; 
-            transition: all 0.3s ease;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        .engine-item:hover {
-            background: rgba(66, 165, 245, 0.1);
+        .engine-switch:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        @media (max-width: 600px) {
-            .search-container {
-                padding: 20px;
-            }
-
-            .search-box {
-                gap: 6px;
-            }
-
-            #engineButton {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-
-            #searchInput {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-
-            #searchButton {
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-
-            .engine-dropdown {
-                width: 120px;
-                font-size: 12px;
-            }
-        }
-        /* 给搜索容器添加动态效果 */
-        .search-container {
-            position: relative;
-            background: rgba(128, 128, 128, 0.3); /* 灰色背景 */
-            backdrop-filter: blur(20px); /* 高斯模糊效果 */
-            border-radius: 16px;
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
-            text-align: center;
-            transition: transform 0.3s ease;
+        .engine-icon {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
         }
 
-        .search-container.dragging {
-            transform: translateY(10px);
+        /* 优化后的搜索引擎下拉菜单 */
+        .engine-options {
+            position: absolute;
+            top: 55px;
+            left: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 100;
+            min-width: 220px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--engine-border);
+            overscroll-behavior: contain;
+        }
+
+        .engine-options::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .engine-options {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .engine-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .engine-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .engine-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .engine-name {
+            margin-left: 10px;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+
+        /* 调整后的搜索框 */
+        .search-box {
+            flex: 1;
+            height: 25px; /* 从44px调整为40px */
+            padding: 10px 50px 10px 20px;
+            border: 1px solid var(--engine-border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: 2px solid var(--accent-color);
+            box-shadow: 0 4px 25px rgba(0, 102, 255, 0.15);
+        }
+
+        /* 搜索按钮 */
+        .search-button {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            color: var(--text-color);
+            opacity: 0.8;
+            transition: all 0.2s;
+        }
+
+        .search-button:hover {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--engine-border);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        body.engine-menu-open {
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
-    <!-- 夜间模式切换容器 -->
-    <div class="mode-container">
-        <button class="mode-toggle" id="modeToggle">
-            <span class="material-icons">dark_mode</span>
-            夜
-        </button>
-    </div>
-
-    <!-- 搜索容器 -->
-    <div class="search-container" id="searchContainer">
-        <h1 style="color: var(--primary-color); margin-bottom: 30px;">氢搜</h1>
-        <div class="search-box">
-            <!-- 删除现有的搜索引擎切换按钮 -->
-            <input type="text" id="searchInput" placeholder="输入关键词...">
-            <button id="searchButton">搜索</button>
-            <div class="engine-scroll" id="engineScroll">
-                <div class="engine-scroll-inner">
-                    <span data-engine="baidu">百度</span>
-                    <span data-engine="google">谷歌</span>
-                    <span data-engine="bing">必应</span>
-                    <span data-engine="duckduckgo">DuckDuckGo</span>
-                    <span data-engine="so360">360搜索</span>
-                    <span data-engine="CSDN">CSDN</span>
-                    <span data-engine="github">GitHub</span>
-                    <span data-engine="bokeyuan">博客园</span>
-                    <span data-engine="yinghua">樱花搜索</span>
-                    <span data-engine="yandex">Yandex</span>
-                    <span data-engine="mengniang">萌娘百科</span>
-                    <span data-engine="sogou">搜狗</span>
+    <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+    
+    <div class="search-container">
+        <div class="live-clock" id="liveClock"></div>
+        
+        <form id="searchForm">
+            <div class="search-group">
+                <div class="engine-wrapper">
+                    <button type="button" class="engine-switch" id="engineSwitch">
+                        <img src="image/bing.ico" class="engine-icon" alt="搜索引擎">
+                    </button>
+                    <div class="engine-options" id="engineOptions">
+                        <div class="engine-option" data-value="bing">
+                            <img src="image/bing.ico" class="engine-icon" alt="Bing">
+                            <span class="engine-name">必应</span>
+                        </div>
+                        <div class="engine-option" data-value="baidu">
+                            <img src="image/baidu.ico" class="engine-icon" alt="Baidu">
+                            <span class="engine-name">百度</span>
+                        </div>
+                        <div class="engine-option" data-value="so360">
+                            <img src="image/360.ico" class="engine-icon" alt="360">
+                            <span class="engine-name">360搜索</span>
+                        </div>
+                        <div class="engine-option" data-value="sogou">
+                            <img src="image/sougo.ico" class="engine-icon" alt="Sogou">
+                            <span class="engine-name">搜狗</span>
+                        </div>
+                        <div class="engine-option" data-value="CSDN">
+                            <img src="image/csdn.ico" class="engine-icon" alt="CSDN">
+                            <span class="engine-name">CSDN</span>
+                        </div>
+                        <div class="engine-option" data-value="github">
+                            <img src="image/github.ico" class="engine-icon" alt="GitHub">
+                            <span class="engine-name">GitHub</span>
+                        </div>
+                        <div class="engine-option" data-value="mengniang">
+                            <img src="image/mengniang.ico" class="engine-icon" alt="Moegirl">
+                            <span class="engine-name">萌娘百科</span>
+                        </div>
+                        <div class="engine-option" data-value="google">
+                            <img src="image/google.png" class="engine-icon" alt="Google">
+                            <span class="engine-name">Google</span>
+                        </div>
+                        
+                        <div class="engine-option" data-value="yandex">
+                            <img src="image/yandex.png" class="engine-icon" alt="Yandex">
+                            <span class="engine-name">Yandex</span>
+                        </div>
+                    </div>
                 </div>
+                <input 
+                    type="text" 
+                    class="search-box" 
+                    placeholder="用 Bing 搜索..."
+                    autofocus
+                >
+                <button type="submit" class="search-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
+                    </svg>
+                </button>
             </div>
-        </div>
+        </form>
     </div>
-    <style>
-        /* 新增滚动控件样式 */
-        .search-box {
-            display: flex;
-            flex-direction: column; /* 让子元素垂直排列 */
-        }
-        .engine-scroll {
-            margin-left: 100px;
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            margin-top: 10px; /* 增加一些与上方元素的间距 */
-            /* 自定义滚动条样式 */
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0.1);
-        }
-        /* 滚动条整体样式 */
-        .engine-scroll::-webkit-scrollbar {
-            height: 8px; /* 滚动条高度 */
-        }
-        /* 滚动条轨道 */
-        .engine-scroll::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-        /* 滚动条滑块 */
-        .engine-scroll::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 4px;
-        }
-        /* 滚动条滑块悬停效果 */
-        .engine-scroll::-webkit-scrollbar-thumb:hover {
-            background: darken(var(--primary-color), 10%);
-        }
-        .engine-scroll-inner {
-            margin-left: 20px;
-            margin-right: 30px;
-            margin-top: 10px;
-            height: 50px;
-            display: inline-block;
-        }
-   .search-box {
-            display: flex;
-            flex-direction: row; /* 改回横向排列 */
-            align-items: center;
-            gap: 8px;
-        }
-   .search-box > input {
-            flex: 1; /* 输入框占据剩余空间 */
-            margin: 0; /* 移除外边距 */
-        }
-   .search-box > button {
-            margin: 0; /* 移除外边距 */
-            white-space: nowrap; /* 防止文字换行 */
-        }
-   /* 新增滚动控件样式 */
-       .engine-scroll {
-            order: 1; /* 强制显示在第二行 */
-            width: calc(100% + 40px); /* 抵消父容器padding */
-            margin: 15px -20px -10px; /* 对齐父容器边缘 */
-            overflow-x: auto;
-            white-space: nowrap;
+
+    <script>
+        // 主题切换
+        function toggleTheme() {
+            document.body.dataset.theme = 
+                document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', document.body.dataset.theme);
         }
 
-       .search-box {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap; /* 允许元素换行 */
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-        }
-   .search-box > input {
-            flex: 1; /* 输入框占据剩余空间 */
-            margin: 0; /* 移除外边距 */
-        }
-   .search-box > button {
-            margin: 0; /* 移除外边距 */
-            white-space: nowrap; /* 防止文字换行 */
-        }
-   /* 新增滚动控件样式 */
-       .engine-scroll {
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            margin-top: 10px;
-            scrollbar-width: none; /* 隐藏滚动条 */
-            -ms-overflow-style: none; /* IE/Edge */
-        }
-       .engine-scroll::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
-       /* 修改前 */
-       .engine-scroll span {
-            padding: 8px 15px;
-            margin: 0 5px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 8px; /* 增大圆角 */
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-        }
+        // 初始化主题
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) document.body.dataset.theme = savedTheme;
 
-        /* 修改后 */
-       .engine-scroll span {
-            padding: 8px 15px;
-            margin: 0 5px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 12px; /* 增大圆角至12px */
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
+        // 实时时钟
+        function updateClock() {
+            const clock = document.getElementById('liveClock');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', { 
+                hour12: false, 
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(/:/g, '<span style="opacity:0.6;margin:0 2px;">:</span>'); // 美化冒号显示
+            
+            clock.innerHTML = timeString;
         }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-       .engine-scroll span.selected-engine {
-            background-color: #42a5f5; 
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(66, 165, 245, 0.4);
-            border-radius: 12px; /* 添加选中状态的圆角 */
-        }
-
-        /* 媒体查询中的修改 */
-        @media (max-width: 600px) {
-            .engine-scroll span {
-                border-radius: 10px; /* 移动端稍小的圆角 */
-                padding: 6px 12px;
+        // 搜索引擎配置
+        const engines = {
+            baidu: { 
+                url: "https://www.baidu.com/s?wd=", 
+                icon: "https://www.baidu.com/favicon.ico", 
+                placeholder: "百度一下..." 
+            },
+            google: { 
+                url: "https://www.google.com/search?q=", 
+                icon: "https://www.google.com/favicon.ico",
+                placeholder: "Google 搜索..." 
+            },
+            bing: { 
+                url: "https://www.bing.com/search?q=", 
+                icon: "https://www.bing.com/favicon.ico", 
+                placeholder: "必应搜索..." 
+            },
+            duckduckgo: { 
+                url: "https://duckduckgo.com/?q=", 
+                icon: "https://duckduckgo.com/favicon.ico",
+                placeholder: "DuckDuckGo 搜索..." 
+            },
+            so360: { 
+                url: "https://www.so.com/s?q=", 
+                icon: "https://www.so.com/favicon.ico", 
+                placeholder: "360 搜索..." 
+            },
+            CSDN: { 
+                url: "https://so.csdn.net/so/search?q=", 
+                icon: "https://csdnimg.cn/public/favicon.ico", 
+                placeholder: "CSDN 搜索..." 
+            },
+            github: { 
+                url: "https://github.com/search?q=", 
+                icon: "https://github.com/favicon.ico", 
+                placeholder: "GitHub 搜索..." 
+            },
+            mengniang: { 
+                url: "https://zh.moegirl.org.cn/index.php?search=", 
+                icon: "https://zh.moegirl.org.cn/favicon.ico", 
+                placeholder: "萌娘百科..." 
+            },
+            yandex: { 
+                url: "https://yandex.com/search/?text=", 
+                icon: "https://yastatic.net/lego/_/La6qi18Z8LwgnZdsAr1qy1GwC4g.ico",
+                placeholder: "Yandex 搜索..." 
+            },
+            sogou: { 
+                url: "https://www.sogou.com/web?query=", 
+                icon: "https://www.sogou.com/favicon.ico", 
+                placeholder: "搜狗搜索..." 
             }
-        }
-   .engine-scroll-inner {
-            display: inline-block;
-        }
-   .engine-scroll span {
-            padding: 5px 10px;
-            margin: 0 5px;
-            background-color: #808080; /* 灰色背景 */
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-   .engine-scroll span:hover {
-            background-color: #a9a9a9; /* 悬停时颜色稍亮 */
-        }
-    /* 选中的搜索引擎样式，改为蓝色 */
-   .engine-scroll span.selected-engine {
-        background-color: #42a5f5; /* 蓝色背景 */
-    }
-</style>
-<script>
-    // 搜索引擎配置
-    const engines = {
-        baidu: "https://www.baidu.com/s?wd=",
-        google: "https://www.google.com/search?q=",
-        bing: "https://www.bing.com/search?q=",
-        duckduckgo: "https://duckduckgo.com/?q=",
-        so360: "https://www.so.com/s?q=",
-        CSDN: "https://so.csdn.net/so/search?q=",
-        github: "https://github.com/search?q=",
-        bokeyuan: "https://zzk.cnblogs.com/s?w=",
-        yinghua: "https://www.yinghua8.net/lookfor.html?wd=",
-        yandex: "https://yandex.com/search/?text=",
-        mengniang: "https://zh.moegirl.org.cn/index.php?search=",
-        sogou: "https://www.sogou.com/web?query=",
-    };
-
-    let currentEngine = "baidu";
-
-    // 切换搜索引擎
-    document.querySelectorAll('.engine-scroll span').forEach(item => {
-        item.addEventListener('click', () => {
-            // 移除所有选中状态
-            document.querySelectorAll('.engine-scroll span').forEach(el => 
-                el.classList.remove('selected-engine'));
-            // 添加当前选中状态
-            item.classList.add('selected-engine');
-            currentEngine = item.dataset.engine;
-        });
-    });
-
-    // 初始化默认选中
-    document.querySelector('[data-engine="baidu"]').classList.add('selected-engine');
-
-    // 搜索功能
-    document.getElementById('searchButton').addEventListener('click', () => {
-        const query = document.getElementById('searchInput').value.trim();
-        if (query) {
-            window.open(engines[currentEngine] + encodeURIComponent(query), '_blank');
-        }
-    });
-
-    // 回车键搜索
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            document.getElementById('searchButton').click();
-        }
-    });
-
-    // 夜间模式切换
-    const modeToggle = document.getElementById('modeToggle');
-    const body = document.body;
-
-    // 检查 localStorage 中的模式设置
-    if (localStorage.getItem('dark-mode') === 'enabled') {
-        body.classList.add('dark-mode');
-        modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
-    }
-
-    // 切换模式
-    modeToggle.addEventListener('click', () => {
-        body.classList.toggle('dark-mode');
-
-        if (body.classList.contains('dark-mode')) {
-            localStorage.setItem('dark-mode', 'enabled');
-            modeToggle.innerHTML = '<span class="material-icons">light_mode</span>昼';
-        } else {
-            localStorage.setItem('dark-mode', 'disabled');
-            modeToggle.innerHTML = '<span class="material-icons">dark_mode</span> 夜';
-        }
-    });
-
-    // 自动聚焦搜索框功能
-    const searchInput = document.getElementById('searchInput');
-    const searchContainer = document.getElementById('searchContainer');
-
-    let startY = 0;
-    let isDragging = false;
-
-    searchContainer.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        isDragging = true;
-        searchContainer.classList.add('dragging');
-    });
-
-    searchContainer.addEventListener('touchmove', (e) => {
-        if (isDragging) {
-            const endY = e.touches[0].clientY;
-            // 修改为上滑触发聚焦
-            if (startY - endY > 10) { 
-                searchInput.focus();
-            }
-        }
-    });
-
-    searchContainer.addEventListener('touchend', () => {
-        isDragging = false;
-        searchContainer.classList.remove('dragging');
-    });
-
-    // 防抖函数
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
         };
-    }
 
-    // 监听滚动事件
-    window.addEventListener('scroll', debounce(() => {
-        if (window.scrollY > 1) {
-            searchInput.focus();
+        // 状态管理
+        let currentEngine = 'bing';
+
+        // DOM元素
+        const engineSwitch = document.getElementById('engineSwitch');
+        const engineOptions = document.getElementById('engineOptions');
+        const searchBox = document.querySelector('.search-box');
+        const engineIcon = document.querySelector('#engineSwitch .engine-icon');
+
+        // 引擎切换按钮点击事件
+        engineSwitch.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpening = engineOptions.style.display === 'block';
+            engineOptions.style.display = isOpening ? 'none' : 'block';
+            document.body.classList.toggle('engine-menu-open', !isOpening);
+        });
+
+        // 选择搜索引擎
+        document.querySelectorAll('.engine-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const value = option.dataset.value;
+                currentEngine = value;
+                const engine = engines[value];
+                
+                engineIcon.src = engine.icon;
+                searchBox.placeholder = engine.placeholder;
+                engineOptions.style.display = 'none';
+                document.body.classList.remove('engine-menu-open');
+                localStorage.setItem('searchEngine', value);
+            });
+        });
+
+        // 初始化搜索引擎
+        const savedEngine = localStorage.getItem('searchEngine');
+        if (savedEngine && engines[savedEngine]) {
+            currentEngine = savedEngine;
+            const engine = engines[savedEngine];
+            engineIcon.src = engine.icon;
+            searchBox.placeholder = engine.placeholder;
         }
-    }, 100));
 
-    // 移动端触摸事件
-    window.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
+        // 全局点击关闭菜单
+        document.addEventListener('click', () => {
+            engineOptions.style.display = 'none';
+            document.body.classList.remove('engine-menu-open');
+        });
 
-    window.addEventListener('touchmove', debounce((e) => {
-        const endY = e.touches[0].clientY;
-        // 修改为上滑触发聚焦
-        if (startY - endY > 10) { 
-            searchInput.focus();
-        }
-    }, 100));
-</script>
+        // 阻止滚动传播
+        engineOptions.addEventListener('wheel', (e) => {
+            e.stopPropagation();
+        });
+
+        // 表单提交
+        document.getElementById('searchForm').onsubmit = (e) => {
+            e.preventDefault();
+            const query = searchBox.value.trim();
+            if (query) {
+                window.location.href = `${engines[currentEngine].url}${encodeURIComponent(query)}`;
+            }
+        };
+    </script>
 </body>
 </html>
