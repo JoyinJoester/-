@@ -43,6 +43,11 @@
             transition: all 0.3s ease;
         }
 
+        html, body {
+            overflow: hidden;
+            height: 100%;
+        }
+
         .search-container {
             width: 90%;
             max-width: 1000px;
@@ -427,10 +432,133 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* 自定义引擎通用图标 */
+        .custom-engine-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+        
+        .custom-engine-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+        
+        /* 移除自定义引擎图标输入框 */
+        #engineIcon-group {
+            display: none;
+        }
+
+        /* 移动端适配样式 */
+        @media (max-width: 768px) {
+            .live-clock {
+                visibility: visible;
+                opacity: 0.9;
+                transition: visibility 0.3s, opacity 0.3s;
+            }
+            
+            /* 滑动聚焦状态 */
+            body.slide-focus .search-container {
+                margin-top: 0;
+                width: 100%;
+                padding: 15px;
+                box-sizing: border-box;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 900;
+                background-color: var(--bg-color);
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            /* 点击聚焦状态保持原样 */
+            body:not(.slide-focus).searching .search-container {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-top: -20px;
+                box-shadow: none;
+            }
+            
+            /* 滑动聚焦时隐藏时钟 */
+            body.slide-focus .live-clock {
+                visibility: hidden;
+                opacity: 0;
+            }
+            
+            /* 点击聚焦时保持时钟可见 */
+            body:not(.slide-focus).searching .live-clock {
+                visibility: visible;
+                opacity: 0.9;
+            }
+            
+            .search-group {
+                margin-top: 0;
+            }
+            
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                z-index: 901;
+            }
+            
+            .suggest-container {
+                top: 65px;
+                left: 15px;
+                right: 15px;
+                max-height: calc(100vh - 80px);
+            }
+            
+            /* 适配搜索时的背景 */
+            body.slide-focus::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: var(--bg-color);
+                z-index: 800;
+            }
+
+            html, body {
+                overflow: auto;
+                overscroll-behavior: none; /* 防止下拉刷新 */
+                touch-action: manipulation; /* 改善触摸体验 */
+            }
+            
+            /* 内容容器，用于检测滑动手势 */
+            .content-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* 隐藏滑动容器当搜索框聚焦时 */
+            body.searching .content-container {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+    
+    <!-- 添加内容容器用于捕获滑动手势 -->
+    <div class="content-container" id="contentContainer"></div>
     
     <div class="search-container">
         <div class="live-clock" id="liveClock">
@@ -489,7 +617,6 @@
                     class="search-box" 
                     placeholder="用 Bing 搜索..."
                     autocomplete="off"
-                    autofocus
                 >
                 <button type="submit" class="search-button">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -520,10 +647,6 @@
                 <div class="form-group">
                     <label for="engineUrl">搜索URL (使用 %s 代替查询词)</label>
                     <input type="text" id="engineUrl" placeholder="例如: https://www.zhihu.com/search?q=%s">
-                </div>
-                <div class="form-group">
-                    <label for="engineIcon">图标URL (可选)</label>
-                    <input type="text" id="engineIcon" placeholder="例如: https://static.zhihu.com/favicon.ico">
                 </div>
                 <button type="button" class="add-engine-button" id="addEngineBtn">添加搜索引擎</button>
             </div>
@@ -611,7 +734,7 @@
         const engineSwitch = document.getElementById('engineSwitch');
         const engineOptions = document.getElementById('engineOptions');
         const searchBox = document.querySelector('.search-box');
-        const engineIcon = document.querySelector('#engineSwitch .engine-icon');
+        let engineIcon = document.querySelector('#engineSwitch .engine-icon');
         const suggestContainer = document.getElementById('suggestContainer');
         const customEngineModal = document.getElementById('customEngineModal');
         const closeModalBtn = document.getElementById('closeModal');
@@ -633,6 +756,14 @@
                 customEngineModal.style.display = 'none';
             }
         });
+
+        // 统一的放大镜SVG图标
+        const magnifierSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
+        </svg>`;
+        
+        // 自定义搜索引擎图标的数据URL
+        const customEngineIconDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(magnifierSvg)}`;
 
         function refreshCustomEnginesList() {
             const customEngineList = document.getElementById('customEngineList');
@@ -674,7 +805,8 @@
         addEngineBtn.addEventListener('click', () => {
             const name = document.getElementById('engineName').value.trim();
             const url = document.getElementById('engineUrl').value.trim();
-            const icon = document.getElementById('engineIcon').value.trim() || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23aaa"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/></svg>';
+            // 使用统一的图标
+            const icon = customEngineIconDataUrl;
             
             if (!name || !url) {
                 alert('引擎名称和搜索URL不能为空');
@@ -698,7 +830,6 @@
             
             document.getElementById('engineName').value = '';
             document.getElementById('engineUrl').value = '';
-            document.getElementById('engineIcon').value = '';
             
             refreshCustomEnginesList();
             renderCustomEngineOptions();
@@ -713,15 +844,27 @@
                 const option = document.createElement('div');
                 option.className = 'engine-option';
                 option.dataset.value = key;
+                
+                // 使用自定义图标容器
                 option.innerHTML = `
-                    <img src="${engine.icon}" class="engine-icon" alt="${key}">
+                    <div class="custom-engine-icon">${magnifierSvg}</div>
                     <span class="engine-name">${key}</span>
                 `;
+                
                 customEnginesContainer.appendChild(option);
                 
                 option.addEventListener('click', () => {
                     currentEngine = key;
-                    engineIcon.src = engine.icon;
+                    
+                    // 设置搜索框图标也为自定义图标
+                    const engineIconWrapper = document.createElement('div');
+                    engineIconWrapper.className = 'custom-engine-icon';
+                    engineIconWrapper.innerHTML = magnifierSvg;
+                    
+                    // 替换搜索按钮图标
+                    engineIcon.replaceWith(engineIconWrapper);
+                    engineIcon = engineIconWrapper; // 更新引用
+                    
                     searchBox.placeholder = engine.placeholder;
                     engineOptions.style.display = 'none';
                     document.body.classList.remove('engine-menu-open');
@@ -969,16 +1112,52 @@
             clearTimeout(suggestTimeout);
             suggestTimeout = setTimeout(() => {
                 fetchSuggestions(searchBox.value.trim());
+                
+                // 在移动设备上输入时保持searching状态
+                if (isMobile && searchBox.value.trim()) {
+                    document.body.classList.add('searching');
+                }
             }, 300); // 延迟300ms避免频繁请求
         });
 
-        // 搜索框聚焦事件
+        // 搜索框聚焦事件 - 区分点击聚焦和滑动聚焦
         searchBox.addEventListener('focus', () => {
-            if (searchBox.value.trim()) {
-                fetchSuggestions(searchBox.value.trim());
+            if (isMobile) {
+                // 添加searching类，但不添加slide-focus类
+                // 这样点击聚焦时保持原有布局
+                document.body.classList.add('searching');
+                
+                if (searchBox.value.trim()) {
+                    fetchSuggestions(searchBox.value.trim());
+                }
             }
         });
         
+        searchBox.addEventListener('blur', () => {
+            // 延迟移除类，以便用户有时间点击搜索建议
+            setTimeout(() => {
+                // 只有当建议容器隐藏时才移除类
+                if (suggestContainer.style.display !== 'block') {
+                    document.body.classList.remove('searching');
+                    document.body.classList.remove('slide-focus');
+                }
+            }, 200);
+        });
+        
+        // 处理点击搜索建议后的状态
+        suggestContainer.addEventListener('click', () => {
+            setTimeout(() => {
+                document.body.classList.remove('searching');
+                document.body.classList.remove('slide-focus');
+            }, 200);
+        });
+        
+        // 处理搜索提交后的状态
+        document.getElementById('searchForm').addEventListener('submit', () => {
+            document.body.classList.remove('searching');
+            document.body.classList.remove('slide-focus');
+        });
+
         document.addEventListener('keydown', e => {
             if (suggestContainer.style.display === 'block') {
                 const items = suggestContainer.querySelectorAll('.suggest-item');
@@ -1002,6 +1181,65 @@
                         searchBox.value = active.previousElementSibling.querySelector('.suggest-text').textContent;
                     }
                 }
+            }
+            
+            // 移动设备上按下ESC恢复正常视图
+            if (e.key === 'Escape' && isMobile) {
+                document.body.classList.remove('searching');
+                document.body.classList.remove('slide-focus');
+            }
+        });
+
+        // 检测设备类型
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        
+        // 添加移动端滑动检测 - 修改为使用slide-focus类
+        if (isMobile) {
+            const contentContainer = document.getElementById('contentContainer');
+            let startY = 0;
+            
+            contentContainer.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            contentContainer.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY;
+                // 如果向上滑动超过30px，聚焦搜索框并添加slide-focus类
+                if (startY - currentY > 30) {
+                    searchBox.focus();
+                    // 添加slide-focus类以应用滑动聚焦特有的样式
+                    document.body.classList.add('slide-focus');
+                    e.preventDefault(); // 阻止继续滚动
+                }
+            }, { passive: false });
+            
+            // 防止屏幕内容被键盘顶起时可能出现的滚动
+            window.addEventListener('resize', () => {
+                if (document.activeElement === searchBox) {
+                    window.scrollTo(0, 0);
+                }
+            });
+        } else {
+            // 桌面端防止滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 初始化时适配已存在的自定义引擎
+        document.addEventListener('DOMContentLoaded', () => {
+            // 为所有自定义引擎设置统一图标
+            Object.keys(customEngines).forEach(key => {
+                customEngines[key].icon = customEngineIconDataUrl;
+            });
+            
+            localStorage.setItem('customEngines', JSON.stringify(customEngines));
+            
+            // 如果当前引擎是自定义引擎，更新图标
+            if (customEngines[currentEngine]) {
+                const engineIconWrapper = document.createElement('div');
+                engineIconWrapper.className = 'custom-engine-icon';
+                engineIconWrapper.innerHTML = magnifierSvg;
+                engineIcon.replaceWith(engineIconWrapper);
+                engineIcon = engineIconWrapper;
             }
         });
     </script>
