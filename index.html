@@ -12,7 +12,10 @@
             --text-color: #333333;
             --accent-color: #0066ff;
             --engine-border: rgba(0, 0, 0, 0.1);
-            --clock-color: #0066ff; /* 新增白天时钟颜色 */
+            --clock-color: #0066ff;
+            --history-bg: rgba(240, 240, 240, 0.9);
+            --history-hover: rgba(0, 0, 0, 0.05);
+            --modal-overlay: rgba(0, 0, 0, 0.5);
         }
 
         [data-theme="dark"] {
@@ -22,7 +25,10 @@
             --text-color: #ffffff;
             --accent-color: #00ff88;
             --engine-border: rgba(255, 255, 255, 0.1);
-            --clock-color: #00ff88; /* 新增夜间时钟颜色 */
+            --clock-color: #00ff88;
+            --history-bg: rgba(50, 50, 50, 0.8);
+            --history-hover: rgba(255, 255, 255, 0.1);
+            --modal-overlay: rgba(0, 0, 0, 0.7);
         }
 
         body {
@@ -41,10 +47,9 @@
             width: 90%;
             max-width: 1000px;
             position: relative;
-            margin-top: -20px; /* 整体上移 */
+            margin-top: -20px;
         }
 
-        /* 美化后的时钟样式 */
         .live-clock {
             position: absolute;
             top: -100px;
@@ -59,15 +64,32 @@
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
             color: var(--clock-color);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            cursor: pointer;
         }
 
         [data-theme="dark"] .live-clock {
-            text-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); /* 暗色模式发光效果 */
+            text-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
         }
 
         .live-clock:hover {
             opacity: 1;
             transform: translateX(-50%) scale(1.02);
+        }
+
+        .clock-tooltip {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            color: var(--text-color);
+        }
+
+        .live-clock:hover .clock-tooltip {
+            opacity: 0.7;
         }
 
         .search-group {
@@ -76,7 +98,6 @@
             align-items: center;
         }
 
-        /* 调整后的引擎切换按钮 */
         .engine-switch {
             width: 44px;
             height: 44px;
@@ -103,7 +124,6 @@
             object-fit: contain;
         }
 
-        /* 优化后的搜索引擎下拉菜单 */
         .engine-options {
             position: absolute;
             top: 55px;
@@ -154,10 +174,9 @@
             font-size: 15px;
         }
 
-        /* 调整后的搜索框 */
         .search-box {
             flex: 1;
-            height: 25px; /* 从44px调整为40px */
+            height: 25px;
             padding: 10px 50px 10px 20px;
             border: 1px solid var(--engine-border);
             border-radius: 12px;
@@ -174,7 +193,6 @@
             box-shadow: 0 4px 25px rgba(0, 102, 255, 0.15);
         }
 
-        /* 搜索按钮 */
         .search-button {
             position: absolute;
             right: 18px;
@@ -199,7 +217,6 @@
             height: 20px;
         }
 
-        /* 主题切换按钮 */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -220,13 +237,152 @@
         body.engine-menu-open {
             overflow: hidden;
         }
+
+        .customize-engines {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--modal-overlay);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            opacity: 0.7;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .custom-engine-list {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .custom-engine-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        [data-theme="dark"] .custom-engine-item {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-engine-info {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .custom-engine-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .custom-engine-url {
+            font-size: 12px;
+            opacity: 0.7;
+            word-break: break-all;
+        }
+
+        .custom-engine-delete {
+            color: #ff4d4f;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .add-engine-form {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        [data-theme="dark"] .add-engine-form {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--engine-border);
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .add-engine-button {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .add-engine-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
     
     <div class="search-container">
-        <div class="live-clock" id="liveClock"></div>
+        <div class="live-clock" id="liveClock">
+            <div class="clock-tooltip">点击设置自定义搜索引擎</div>
+        </div>
         
         <form id="searchForm">
             <div class="search-group">
@@ -267,17 +423,19 @@
                             <img src="image/google.png" class="engine-icon" alt="Google">
                             <span class="engine-name">Google</span>
                         </div>
-                        
                         <div class="engine-option" data-value="yandex">
                             <img src="image/yandex.png" class="engine-icon" alt="Yandex">
                             <span class="engine-name">Yandex</span>
                         </div>
+                        
+                        <div id="customEngines"></div>
                     </div>
                 </div>
                 <input 
                     type="text" 
                     class="search-box" 
                     placeholder="用 Bing 搜索..."
+                    autocomplete="off"
                     autofocus
                 >
                 <button type="submit" class="search-button">
@@ -288,20 +446,44 @@
             </div>
         </form>
     </div>
+    
+    <div class="modal-overlay" id="customEngineModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">自定义搜索引擎</div>
+                <div class="modal-close" id="closeModal">×</div>
+            </div>
+            
+            <div class="custom-engine-list" id="customEngineList"></div>
+            
+            <div class="add-engine-form">
+                <div class="form-group">
+                    <label for="engineName">引擎名称</label>
+                    <input type="text" id="engineName" placeholder="例如: 知乎">
+                </div>
+                <div class="form-group">
+                    <label for="engineUrl">搜索URL (使用 %s 代替查询词)</label>
+                    <input type="text" id="engineUrl" placeholder="例如: https://www.zhihu.com/search?q=%s">
+                </div>
+                <div class="form-group">
+                    <label for="engineIcon">图标URL (可选)</label>
+                    <input type="text" id="engineIcon" placeholder="例如: https://static.zhihu.com/favicon.ico">
+                </div>
+                <button type="button" class="add-engine-button" id="addEngineBtn">添加搜索引擎</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // 主题切换
         function toggleTheme() {
             document.body.dataset.theme = 
                 document.body.dataset.theme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', document.body.dataset.theme);
         }
 
-        // 初始化主题
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) document.body.dataset.theme = savedTheme;
 
-        // 实时时钟
         function updateClock() {
             const clock = document.getElementById('liveClock');
             const now = new Date();
@@ -310,14 +492,13 @@
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
-            }).replace(/:/g, '<span style="opacity:0.6;margin:0 2px;">:</span>'); // 美化冒号显示
+            }).replace(/:/g, '<span style="opacity:0.6;margin:0 2px;">:</span>');
             
             clock.innerHTML = timeString;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 搜索引擎配置
         const engines = {
             baidu: { 
                 url: "https://www.baidu.com/s?wd=", 
@@ -334,7 +515,6 @@
                 icon: "image/bing.ico", 
                 placeholder: "必应搜索..." 
             },
-            
             so360: { 
                 url: "https://www.so.com/s?q=", 
                 icon: "image/360.ico", 
@@ -367,16 +547,132 @@
             }
         };
 
-        // 状态管理
+        const customEngines = JSON.parse(localStorage.getItem('customEngines') || '{}');
+        Object.assign(engines, customEngines);
+
         let currentEngine = 'bing';
 
-        // DOM元素
         const engineSwitch = document.getElementById('engineSwitch');
         const engineOptions = document.getElementById('engineOptions');
         const searchBox = document.querySelector('.search-box');
         const engineIcon = document.querySelector('#engineSwitch .engine-icon');
+        const customEngineModal = document.getElementById('customEngineModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const addEngineBtn = document.getElementById('addEngineBtn');
+        const liveClock = document.getElementById('liveClock');
 
-        // 引擎切换按钮点击事件
+        liveClock.addEventListener('click', (e) => {
+            e.stopPropagation();
+            refreshCustomEnginesList();
+            customEngineModal.style.display = 'flex';
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            customEngineModal.style.display = 'none';
+        });
+
+        customEngineModal.addEventListener('click', (e) => {
+            if (e.target === customEngineModal) {
+                customEngineModal.style.display = 'none';
+            }
+        });
+
+        function refreshCustomEnginesList() {
+            const customEngineList = document.getElementById('customEngineList');
+            customEngineList.innerHTML = '';
+            
+            const userEngines = Object.keys(customEngines);
+            
+            if (userEngines.length === 0) {
+                customEngineList.innerHTML = '<div style="text-align:center;padding:10px;opacity:0.7;">暂无自定义搜索引擎</div>';
+                return;
+            }
+            
+            userEngines.forEach(key => {
+                const engine = customEngines[key];
+                const item = document.createElement('div');
+                item.className = 'custom-engine-item';
+                item.innerHTML = `
+                    <div class="custom-engine-info">
+                        <div class="custom-engine-name">${key}</div>
+                        <div class="custom-engine-url">${engine.url}</div>
+                    </div>
+                    <div class="custom-engine-delete" data-key="${key}">删除</div>
+                `;
+                customEngineList.appendChild(item);
+            });
+            
+            document.querySelectorAll('.custom-engine-delete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.key;
+                    delete customEngines[key];
+                    delete engines[key];
+                    localStorage.setItem('customEngines', JSON.stringify(customEngines));
+                    refreshCustomEnginesList();
+                    renderCustomEngineOptions();
+                });
+            });
+        }
+
+        addEngineBtn.addEventListener('click', () => {
+            const name = document.getElementById('engineName').value.trim();
+            const url = document.getElementById('engineUrl').value.trim();
+            const icon = document.getElementById('engineIcon').value.trim() || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23aaa"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/></svg>';
+            
+            if (!name || !url) {
+                alert('引擎名称和搜索URL不能为空');
+                return;
+            }
+            
+            if (!url.includes('%s')) {
+                alert('搜索URL必须包含 %s 作为查询词的占位符');
+                return;
+            }
+            
+            customEngines[name] = {
+                url: url,
+                icon: icon,
+                placeholder: `用 ${name} 搜索...`
+            };
+            
+            engines[name] = customEngines[name];
+            
+            localStorage.setItem('customEngines', JSON.stringify(customEngines));
+            
+            document.getElementById('engineName').value = '';
+            document.getElementById('engineUrl').value = '';
+            document.getElementById('engineIcon').value = '';
+            
+            refreshCustomEnginesList();
+            renderCustomEngineOptions();
+        });
+
+        function renderCustomEngineOptions() {
+            const customEnginesContainer = document.getElementById('customEngines');
+            customEnginesContainer.innerHTML = '';
+            
+            Object.keys(customEngines).forEach(key => {
+                const engine = customEngines[key];
+                const option = document.createElement('div');
+                option.className = 'engine-option';
+                option.dataset.value = key;
+                option.innerHTML = `
+                    <img src="${engine.icon}" class="engine-icon" alt="${key}">
+                    <span class="engine-name">${key}</span>
+                `;
+                customEnginesContainer.appendChild(option);
+                
+                option.addEventListener('click', () => {
+                    currentEngine = key;
+                    engineIcon.src = engine.icon;
+                    searchBox.placeholder = engine.placeholder;
+                    engineOptions.style.display = 'none';
+                    document.body.classList.remove('engine-menu-open');
+                    localStorage.setItem('searchEngine', key);
+                });
+            });
+        }
+
         engineSwitch.addEventListener('click', (e) => {
             e.stopPropagation();
             const isOpening = engineOptions.style.display === 'block';
@@ -384,7 +680,6 @@
             document.body.classList.toggle('engine-menu-open', !isOpening);
         });
 
-        // 选择搜索引擎
         document.querySelectorAll('.engine-option').forEach(option => {
             option.addEventListener('click', () => {
                 const value = option.dataset.value;
@@ -399,7 +694,6 @@
             });
         });
 
-        // 初始化搜索引擎
         const savedEngine = localStorage.getItem('searchEngine');
         if (savedEngine && engines[savedEngine]) {
             currentEngine = savedEngine;
@@ -408,18 +702,15 @@
             searchBox.placeholder = engine.placeholder;
         }
 
-        // 全局点击关闭菜单
         document.addEventListener('click', () => {
             engineOptions.style.display = 'none';
             document.body.classList.remove('engine-menu-open');
         });
 
-        // 阻止滚动传播
         engineOptions.addEventListener('wheel', (e) => {
             e.stopPropagation();
         });
 
-        // 表单提交
         document.getElementById('searchForm').onsubmit = (e) => {
             e.preventDefault();
             const query = searchBox.value.trim();
@@ -427,6 +718,35 @@
                 window.location.href = `${engines[currentEngine].url}${encodeURIComponent(query)}`;
             }
         };
+
+        renderCustomEngineOptions();
+
+        document.addEventListener('keydown', e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchBox.focus();
+          }
+          
+          if (e.key === 'Escape') {
+            searchBox.value = '';
+          }
+          
+          if (e.altKey && e.key >= 1 && e.key <= 9) {
+            const index = parseInt(e.key) - 1;
+            const enginesList = Object.keys(engines);
+            if (enginesList[index]) {
+              switchEngine(enginesList[index]);
+            }
+          }
+        });
+
+        function switchEngine(engineKey) {
+          const engine = engines[engineKey];
+          currentEngine = engineKey;
+          engineIcon.src = engine.icon;
+          searchBox.placeholder = engine.placeholder;
+          localStorage.setItem('searchEngine', engineKey);
+        }
     </script>
 </body>
 </html>
