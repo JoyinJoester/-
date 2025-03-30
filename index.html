@@ -374,6 +374,59 @@
             opacity: 0.9;
             transform: translateY(-2px);
         }
+
+        /* 添加搜索联想样式 */
+        .suggest-container {
+            position: absolute;
+            top: 55px;
+            left: 54px;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 99;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--engine-border);
+        }
+        
+        .suggest-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        
+        .suggest-item:hover, .suggest-item.active {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .suggest-item:hover, 
+        [data-theme="dark"] .suggest-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .suggest-text {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .suggest-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .suggest-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body>
@@ -443,6 +496,9 @@
                         <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
                     </svg>
                 </button>
+                
+                <!-- 添加搜索联想容器 -->
+                <div class="suggest-container" id="suggestContainer"></div>
             </div>
         </form>
     </div>
@@ -556,6 +612,7 @@
         const engineOptions = document.getElementById('engineOptions');
         const searchBox = document.querySelector('.search-box');
         const engineIcon = document.querySelector('#engineSwitch .engine-icon');
+        const suggestContainer = document.getElementById('suggestContainer');
         const customEngineModal = document.getElementById('customEngineModal');
         const closeModalBtn = document.getElementById('closeModal');
         const addEngineBtn = document.getElementById('addEngineBtn');
@@ -704,6 +761,7 @@
 
         document.addEventListener('click', () => {
             engineOptions.style.display = 'none';
+            suggestContainer.style.display = 'none';
             document.body.classList.remove('engine-menu-open');
         });
 
@@ -747,6 +805,205 @@
           searchBox.placeholder = engine.placeholder;
           localStorage.setItem('searchEngine', engineKey);
         }
+
+        // 添加搜索联想功能
+        let suggestTimeout = null;
+        
+        // 搜索联想API映射
+        const suggestApis = {
+            baidu: {
+                url: "https://suggestion.baidu.com/su?wd=",
+                callback: "window.baiduSuggestion",
+                process: data => (data.s || []).map(item => ({ text: item }))
+            },
+            google: {
+                url: "https://suggestqueries.google.com/complete/search?client=firefox&q=",
+                callback: "window.googleSuggestion",
+                process: data => (data[1] || []).map(item => ({ text: item }))
+            },
+            bing: {
+                url: "https://api.bing.com/qsonhs.aspx?type=cb&q=",
+                callback: "window.bingSuggestion",
+                process: data => {
+                    try {
+                        return data.AS.Results[0].Suggests.map(item => ({ text: item.Txt }));
+                    } catch (e) {
+                        return [];
+                    }
+                }
+            },
+            so360: {
+                url: "https://sug.so.360.cn/suggest?word=",
+                callback: "window.so360Suggestion",
+                process: data => (data.s || []).map(item => ({ text: item }))
+            },
+            sogou: {
+                url: "https://www.sogou.com/suggnew/ajajjson?key=",
+                callback: "window.sogouSuggestion",
+                process: data => {
+                    try {
+                        // 搜狗返回的是特殊格式，需要处理
+                        if (typeof data === 'string') {
+                            const match = data.match(/\["(.*?)"\]/);
+                            if (match && match[1]) {
+                                return match[1].split('","').map(item => ({ text: item }));
+                            }
+                        }
+                        return [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+            },
+            // 其他引擎不支持或使用默认的处理方式
+            default: {
+                process: () => []
+            }
+        };
+
+        // 注册全局回调函数
+        window.baiduSuggestion = function(data) {
+            handleSuggestionData(data, 'baidu');
+        };
+
+        window.googleSuggestion = function(data) {
+            handleSuggestionData(data, 'google');
+        };
+
+        window.bingSuggestion = function(data) {
+            handleSuggestionData(data, 'bing');
+        };
+
+        window.so360Suggestion = function(data) {
+            handleSuggestionData(data, 'so360');
+        };
+
+        window.sogouSuggestion = function(data) {
+            handleSuggestionData(data, 'sogou');
+        };
+        
+        // 处理搜索建议数据
+        function handleSuggestionData(data, engine) {
+            const api = suggestApis[engine] || suggestApis.default;
+            const suggestions = api.process(data);
+            renderSuggestions(suggestions, searchBox.value.trim());
+        }
+
+        // 获取当前引擎的API配置
+        function getSuggestApi(engine) {
+            return suggestApis[engine] || suggestApis.default;
+        }
+
+        // JSONP请求函数
+        function jsonp(url, callback) {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() {
+                document.body.removeChild(script);
+            };
+            script.onload = function() {
+                document.body.removeChild(script);
+                if (typeof callback === 'function') callback();
+            };
+            document.body.appendChild(script);
+        }
+
+        // 获取搜索建议
+        function fetchSuggestions(query) {
+            if (!query.trim()) {
+                suggestContainer.style.display = 'none';
+                return;
+            }
+
+            const api = getSuggestApi(currentEngine);
+            
+            // 如果没有对应的API，不显示建议
+            if (!api.url) {
+                suggestContainer.style.display = 'none';
+                return;
+            }
+            
+            const callbackParam = api.callback ? `&cb=${api.callback.split('.')[1]}` : '';
+            const url = api.url + encodeURIComponent(query) + callbackParam;
+            
+            jsonp(url);
+        }
+
+        // 渲染搜索建议
+        function renderSuggestions(suggestions, query) {
+            if (!suggestions || suggestions.length === 0) {
+                suggestContainer.style.display = 'none';
+                return;
+            }
+
+            suggestContainer.innerHTML = '';
+            
+            suggestions.forEach(item => {
+                const suggestItem = document.createElement('div');
+                suggestItem.className = 'suggest-item';
+                
+                // 高亮匹配文本
+                const highlightedText = item.text.replace(
+                    new RegExp('(' + query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi'),
+                    '<span style="color:var(--accent-color);font-weight:bold">$1</span>'
+                );
+                
+                suggestItem.innerHTML = `
+                    <div class="suggest-text">${highlightedText}</div>
+                `;
+                
+                suggestItem.addEventListener('click', () => {
+                    searchBox.value = item.text;
+                    suggestContainer.style.display = 'none';
+                    document.getElementById('searchForm').requestSubmit();
+                });
+                
+                suggestContainer.appendChild(suggestItem);
+            });
+            
+            suggestContainer.style.display = 'block';
+        }
+
+        // 搜索框输入事件
+        searchBox.addEventListener('input', () => {
+            clearTimeout(suggestTimeout);
+            suggestTimeout = setTimeout(() => {
+                fetchSuggestions(searchBox.value.trim());
+            }, 300); // 延迟300ms避免频繁请求
+        });
+
+        // 搜索框聚焦事件
+        searchBox.addEventListener('focus', () => {
+            if (searchBox.value.trim()) {
+                fetchSuggestions(searchBox.value.trim());
+            }
+        });
+        
+        document.addEventListener('keydown', e => {
+            if (suggestContainer.style.display === 'block') {
+                const items = suggestContainer.querySelectorAll('.suggest-item');
+                const active = suggestContainer.querySelector('.suggest-item.active');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!active && items.length > 0) {
+                        items[0].classList.add('active');
+                        searchBox.value = items[0].querySelector('.suggest-text').textContent;
+                    } else if (active && active.nextElementSibling) {
+                        active.classList.remove('active');
+                        active.nextElementSibling.classList.add('active');
+                        searchBox.value = active.nextElementSibling.querySelector('.suggest-text').textContent;
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (active && active.previousElementSibling) {
+                        active.classList.remove('active');
+                        active.previousElementSibling.classList.add('active');
+                        searchBox.value = active.previousElementSibling.querySelector('.suggest-text').textContent;
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
