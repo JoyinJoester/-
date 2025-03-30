@@ -53,6 +53,7 @@
             max-width: 1000px;
             position: relative;
             margin-top: -20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .live-clock {
@@ -63,7 +64,7 @@
             font-size: 50px; 
             font-weight: 600; 
             opacity: 0.9;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             letter-spacing: 2px;
             font-variant-numeric: tabular-nums;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -297,6 +298,7 @@
             margin-bottom: 20px;
             max-height: 300px;
             overflow-y: auto;
+            width: 100%;
         }
 
         .custom-engine-item {
@@ -307,6 +309,8 @@
             background: rgba(0, 0, 0, 0.05);
             border-radius: 8px;
             margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         [data-theme="dark"] .custom-engine-item {
@@ -339,6 +343,11 @@
             background: rgba(0, 0, 0, 0.05);
             padding: 15px;
             border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         [data-theme="dark"] .add-engine-form {
@@ -347,6 +356,8 @@
 
         .form-group {
             margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .form-group label {
@@ -362,6 +373,7 @@
             border: 1px solid var(--engine-border);
             background: var(--bg-color);
             color: var(--text-color);
+            box-sizing: border-box;
         }
 
         .add-engine-button {
@@ -373,11 +385,8 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.2s;
-        }
-
-        .add-engine-button:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+            margin-top: 5px;
+            align-self: center;
         }
 
         /* 添加搜索联想样式 */
@@ -396,6 +405,12 @@
             max-height: 300px;
             overflow-y: auto;
             border: 1px solid var(--engine-border);
+            transform-origin: top center;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                        display 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
         }
         
         .suggest-item {
@@ -460,7 +475,7 @@
             .live-clock {
                 visibility: visible;
                 opacity: 0.9;
-                transition: visibility 0.3s, opacity 0.3s;
+                transition: visibility 0.3s, opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
             /* 滑动聚焦状态 */
@@ -474,8 +489,8 @@
                 left: 0;
                 z-index: 900;
                 background-color: var(--bg-color);
-                transition: all 0.3s ease;
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                transform: translateY(0);
             }
             
             /* 点击聚焦状态保持原样 */
@@ -485,35 +500,41 @@
                 left: auto;
                 margin-top: -20px;
                 box-shadow: none;
+                transform: none;
             }
             
             /* 滑动聚焦时隐藏时钟 */
             body.slide-focus .live-clock {
                 visibility: hidden;
                 opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            
+            /* 滑动聚焦时隐藏主题切换按钮 */
+            body.slide-focus .theme-toggle {
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-20px) scale(0.8);
             }
             
             /* 点击聚焦时保持时钟可见 */
             body:not(.slide-focus).searching .live-clock {
                 visibility: visible;
                 opacity: 0.9;
+                transform: translateX(-50%) scale(1);
             }
             
-            .search-group {
-                margin-top: 0;
-            }
-            
-            .theme-toggle {
-                top: 15px;
-                right: 15px;
-                z-index: 901;
-            }
-            
+            /* 搜索建议滑入动画 */
             .suggest-container {
                 top: 65px;
                 left: 15px;
                 right: 15px;
                 max-height: calc(100vh - 80px);
+            }
+            
+            .suggest-container[style*="display: block"] {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
             
             /* 适配搜索时的背景 */
@@ -526,6 +547,12 @@
                 bottom: 0;
                 background-color: var(--bg-color);
                 z-index: 800;
+                opacity: 1;
+            }
+
+            /* 当点击搜索框但未滑动聚焦时，保持背景透明 */
+            body:not(.slide-focus).searching::before {
+                opacity: 0;
             }
 
             html, body {
@@ -537,14 +564,51 @@
             /* 内容容器，用于检测滑动手势 */
             .content-container {
                 position: absolute;
-                top: 0;
+                top: 120px; /* 放在搜索框下方 */
                 left: 0;
                 width: 100%;
-                height: 100%;
-                z-index: 10;
+                height: calc(100% - 120px); /* 减去顶部空间 */
+                z-index: -1; /* 使用负值z-index确保它在所有元素下层 */
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                pointer-events: auto;
+            }
+            
+            /* 确保交互元素始终在最上层 */
+            .search-container {
+                z-index: 10;
+                position: relative;
+            }
+            
+            .live-clock {
+                z-index: 11;
+            }
+            
+            .engine-switch {
+                z-index: 11;
+            }
+            
+            .search-box {
+                z-index: 11;
+            }
+            
+            .theme-toggle {
+                z-index: 20;
+            }
+            
+            /* 搜索相关弹出层应该在最上层 */
+            .engine-options {
+                z-index: 50;
+            }
+            
+            .suggest-container {
+                z-index: 50;
+            }
+            
+            /* 模态框应该在最上层 */
+            .modal-overlay {
+                z-index: 100;
             }
             
             /* 隐藏滑动容器当搜索框聚焦时 */
@@ -556,9 +620,6 @@
 </head>
 <body>
     <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
-    
-    <!-- 添加内容容器用于捕获滑动手势 -->
-    <div class="content-container" id="contentContainer"></div>
     
     <div class="search-container">
         <div class="live-clock" id="liveClock">
@@ -620,7 +681,7 @@
                 >
                 <button type="submit" class="search-button">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
+                        <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691-6-6-6-6-2.691-6-6 2.691-6 6-6z"/>
                     </svg>
                 </button>
                 
@@ -629,6 +690,9 @@
             </div>
         </form>
     </div>
+    
+    <!-- 内容容器用于捕获滑动手势 -->
+    <div class="content-container" id="contentContainer"></div>
     
     <div class="modal-overlay" id="customEngineModal">
         <div class="modal-content">
@@ -721,19 +785,6 @@
             },
             sogou: { 
                 url: "https://www.sogou.com/web?query=", 
-                icon: "image/sougo.ico", 
-                placeholder: "搜狗搜索..." 
-            }
-        };
-
-        const customEngines = JSON.parse(localStorage.getItem('customEngines') || '{}');
-        Object.assign(engines, customEngines);
-
-        let currentEngine = 'bing';
-
-        const engineSwitch = document.getElementById('engineSwitch');
-        const engineOptions = document.getElementById('engineOptions');
-        const searchBox = document.querySelector('.search-box');
         let engineIcon = document.querySelector('#engineSwitch .engine-icon');
         const suggestContainer = document.getElementById('suggestContainer');
         const customEngineModal = document.getElementById('customEngineModal');
@@ -759,7 +810,7 @@
 
         // 统一的放大镜SVG图标
         const magnifierSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/>
+            <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691-6-6-6-6-2.691-6-6 2.691-6 6-6z"/>
         </svg>`;
         
         // 自定义搜索引擎图标的数据URL
@@ -902,7 +953,12 @@
             searchBox.placeholder = engine.placeholder;
         }
 
-        document.addEventListener('click', () => {
+        document.addEventListener('click', (e) => {
+            // 如果点击的是搜索框或其祖先元素是搜索表单，则不隐藏搜索联想和引擎选项
+            if (e.target === searchBox || e.target.closest('#searchForm')) {
+                return;
+            }
+            
             engineOptions.style.display = 'none';
             suggestContainer.style.display = 'none';
             document.body.classList.remove('engine-menu-open');
@@ -1075,7 +1131,13 @@
         // 渲染搜索建议
         function renderSuggestions(suggestions, query) {
             if (!suggestions || suggestions.length === 0) {
-                suggestContainer.style.display = 'none';
+                // 使用setTimeout实现平滑消失动画
+                suggestContainer.style.opacity = '0';
+                suggestContainer.style.transform = 'translateY(-10px) scale(0.98)';
+                
+                setTimeout(() => {
+                    suggestContainer.style.display = 'none';
+                }, 200);
                 return;
             }
 
@@ -1104,7 +1166,14 @@
                 suggestContainer.appendChild(suggestItem);
             });
             
+            // 先设置内容，再显示并动画
             suggestContainer.style.display = 'block';
+            
+            // 强制重绘以应用过渡效果
+            suggestContainer.offsetHeight;
+            
+            suggestContainer.style.opacity = '1';
+            suggestContainer.style.transform = 'translateY(0) scale(1)';
         }
 
         // 搜索框输入事件
@@ -1120,11 +1189,21 @@
             }, 300); // 延迟300ms避免频繁请求
         });
 
-        // 搜索框聚焦事件 - 区分点击聚焦和滑动聚焦
+        // 修复搜索框点击事件 - 确保点击搜索框时也应用滑动聚焦样式
+        searchBox.addEventListener('click', (e) => {
+            if (isMobile) {
+                // 点击时也应用滑动聚焦样式
+                document.body.classList.add('slide-focus');
+                document.body.classList.add('searching');
+                e.stopPropagation(); // 防止冒泡到文档点击事件
+            }
+        });
+
+        // 搜索框聚焦事件 - 修改为应用滑动聚焦样式
         searchBox.addEventListener('focus', () => {
             if (isMobile) {
-                // 添加searching类，但不添加slide-focus类
-                // 这样点击聚焦时保持原有布局
+                // 使点击聚焦和滑动聚焦保持一致的样式
+                document.body.classList.add('slide-focus');
                 document.body.classList.add('searching');
                 
                 if (searchBox.value.trim()) {
@@ -1193,36 +1272,122 @@
         // 检测设备类型
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
         
-        // 添加移动端滑动检测 - 修改为使用slide-focus类
+        // 添加移动端滑动检测 - 修改为分离滑动聚焦和键盘弹出逻辑
         if (isMobile) {
-            const contentContainer = document.getElementById('contentContainer');
-            let startY = 0;
+            // 确保所有交互元素能正常工作
+            document.querySelectorAll('.engine-switch, .live-clock, .search-box, .theme-toggle').forEach(el => {
+                el.addEventListener('touchstart', e => {
+                    e.stopPropagation(); // 阻止事件冒泡
+                }, { passive: false });
+            });
             
-            contentContainer.addEventListener('touchstart', (e) => {
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.style.pointerEvents = 'none'; // 禁用内容容器的事件捕获
+            
+            // 只在中心区域启用事件捕获，用于滑动
+            const touchArea = document.createElement('div');
+            touchArea.style.position = 'absolute';
+            touchArea.style.width = '80%';
+            touchArea.style.height = '80%';
+            touchArea.style.top = '50%';
+            touchArea.style.left = '50%';
+            touchArea.style.transform = 'translate(-50%, -50%)';
+            touchArea.style.pointerEvents = 'auto';
+            contentContainer.appendChild(touchArea);
+            
+            let startY = 0;
+            let isScrollingUp = false;
+            let scrollThreshold = 30; // 滑动阈值
+            // 添加标记，跟踪是否是第一次加载页面的滑动聚焦
+            let isFirstLoad = true;
+            
+            touchArea.addEventListener('touchstart', (e) => {
                 startY = e.touches[0].clientY;
+                isScrollingUp = false;
             }, { passive: true });
             
-            contentContainer.addEventListener('touchmove', (e) => {
+            touchArea.addEventListener('touchmove', (e) => {
                 const currentY = e.touches[0].clientY;
-                // 如果向上滑动超过30px，聚焦搜索框并添加slide-focus类
-                if (startY - currentY > 30) {
-                    searchBox.focus();
-                    // 添加slide-focus类以应用滑动聚焦特有的样式
-                    document.body.classList.add('slide-focus');
-                    e.preventDefault(); // 阻止继续滚动
+                const deltaY = startY - currentY;
+                
+                // 用户正在向上滑动且超过阈值的一部分时，开始平滑过渡
+                if (deltaY > 0) {
+                    isScrollingUp = true;
+                    
+                    // 计算过渡进度 (0 到 1)
+                    const progress = Math.min(deltaY / scrollThreshold, 1);
+                    
+                    if (progress > 0.3 && progress < 1) {
+                        // 在30%到100%之间应用渐进式过渡效果
+                        const searchContainer = document.querySelector('.search-container');
+                        const liveClock = document.getElementById('liveClock');
+                        const themeToggle = document.querySelector('.theme-toggle');
+                        
+                        // 搜索框开始上移
+                        searchContainer.style.transform = `translateY(${-20 * progress}px)`;
+                        
+                        // 时钟开始淡出
+                        liveClock.style.opacity = `${0.9 * (1 - progress)}`;
+                        
+                        // 主题切换按钮开始淡出
+                        themeToggle.style.opacity = `${1 * (1 - progress)}`;
+                    }
+                    
+                    // 如果超过阈值，触发滑动聚焦
+                    if (deltaY > scrollThreshold) {
+                        document.body.classList.add('slide-focus');
+                        document.body.classList.add('searching');
+                        
+                        // 仅当不是第一次加载时才自动聚焦并弹出键盘
+                        if (!isFirstLoad) {
+                            searchBox.focus();
+                        }
+                        
+                        e.preventDefault();
+                    }
                 }
             }, { passive: false });
             
-            // 防止屏幕内容被键盘顶起时可能出现的滚动
-            window.addEventListener('resize', () => {
-                if (document.activeElement === searchBox) {
-                    window.scrollTo(0, 0);
+            touchArea.addEventListener('touchend', (e) => {
+                // 如果用户正在向上滑动但未达到阈值，重置样式
+                if (isScrollingUp && !document.body.classList.contains('slide-focus')) {
+                    const searchContainer = document.querySelector('.search-container');
+                    const liveClock = document.getElementById('liveClock');
+                    const themeToggle = document.querySelector('.theme-toggle');
+                    
+                    // 使用 CSS 过渡恢复原始状态
+                    searchContainer.style.transform = '';
+                    liveClock.style.opacity = '';
+                    themeToggle.style.opacity = '';
+                } else if (isScrollingUp && document.body.classList.contains('slide-focus')) {
+                    // 当滑动结束且已应用滑动聚焦样式，将第一次加载标记设为false
+                    isFirstLoad = false;
+                    
+                    // 使用延迟聚焦以防止在第一次滑动时就弹出键盘
+                    setTimeout(() => {
+                        // 如果用户手动点击了搜索框，则不需要自动聚焦
+                        if (document.activeElement !== searchBox) {
+                            // 点击搜索框区域，但不触发键盘
+                            const searchContainer = document.querySelector('.search-container');
+                            searchContainer.addEventListener('click', function searchContainerClickHandler() {
+                                searchBox.focus();
+                                searchContainer.removeEventListener('click', searchContainerClickHandler);
+                            }, { once: true });
+                        }
+                    }, 50);
                 }
-            });
+                
+                isScrollingUp = false;
+            }, { passive: true });
         } else {
             // 桌面端防止滚动
             document.body.style.overflow = 'hidden';
         }
+        
+        // 添加触摸搜索框时取消第一次加载状态
+        searchBox.addEventListener('touchstart', () => {
+            isFirstLoad = false;
+        }, { passive: true });
 
         // 初始化时适配已存在的自定义引擎
         document.addEventListener('DOMContentLoaded', () => {
