@@ -541,10 +541,17 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                z-index: 10;
+                z-index: 5; /* 降低 z-index，确保按钮和其他交互元素在上层 */
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                pointer-events: auto; /* 默认启用指针事件 */
+            }
+            
+            /* 确保以下元素始终在内容容器之上 */
+            .theme-toggle, .engine-switch, .live-clock, .engine-options, .search-box, .search-button {
+                position: relative;
+                z-index: 15; /* 确保高于内容容器 */
             }
             
             /* 隐藏滑动容器当搜索框聚焦时 */
