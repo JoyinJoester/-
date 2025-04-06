@@ -508,6 +508,45 @@
                 overscroll-behavior: none; /* 防止下拉刷新 */
                 touch-action: manipulation; /* 改善触摸体验 */
             }
+
+            /* 移动端不显示快捷键提示 */
+            .shortcuts-container {
+                display: none;
+            }
+        }
+
+        /* 快捷键提示样式 */
+        .shortcuts-container {
+            position: fixed;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .shortcuts-container:hover {
+            opacity: 1;
+        }
+
+        .shortcut-item {
+            margin: 0 8px;
+            white-space: nowrap;
+        }
+
+        .shortcut-key {
+            background: var(--card-bg);
+            border: 1px solid var(--engine-border);
+            border-radius: 4px;
+            padding: 2px 5px;
+            margin-right: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -606,6 +645,22 @@
                 </div>
                 <button type="button" class="add-engine-button" id="addEngineBtn">添加搜索引擎</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 快捷键提示容器 - 将在桌面端显示，移动端不显示 -->
+    <div class="shortcuts-container" id="shortcutsContainer">
+        <div class="shortcut-item">
+            <span class="shortcut-key">Ctrl</span> + <span class="shortcut-key">K</span> 
+            <span class="shortcut-desc">聚焦搜索框</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="shortcut-key">Alt</span> + <span class="shortcut-key">1-9</span> 
+            <span class="shortcut-desc">切换搜索引擎</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="shortcut-key">Esc</span> 
+            <span class="shortcut-desc">清空搜索框</span>
         </div>
     </div>
 
@@ -1142,6 +1197,31 @@
 
         // 检测设备类型
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        
+        if (isMobile) {
+            // 移动端特定设置
+            window.addEventListener('resize', () => {
+                if (document.activeElement === searchBox) {
+                    window.scrollTo(0, 0);
+                }
+            });
+            
+            // 移动端不显示快捷键提示
+            document.getElementById('shortcutsContainer').style.display = 'none';
+        } else {
+            // 桌面端防止滚动
+            document.body.style.overflow = 'hidden';
+            
+            // 确保桌面端显示快捷键提示
+            document.getElementById('shortcutsContainer').style.display = 'flex';
+        }
+        
+        // 在窗口大小变化时重新检查是否显示快捷键提示
+        window.addEventListener('resize', () => {
+            const isMobileNow = window.innerWidth < 768;
+            document.getElementById('shortcutsContainer').style.display = 
+                isMobileNow ? 'none' : 'flex';
+        });
         
         // 移除所有滑动检测相关代码
         if (isMobile) {
